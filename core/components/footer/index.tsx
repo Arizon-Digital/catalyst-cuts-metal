@@ -16,7 +16,6 @@ import { client } from '~/client';
 import { readFragment } from '~/client/graphql';
 import { revalidate } from '~/client/revalidate-target';
 import { logoTransformer } from '~/data-transformers/logo-transformer';
-import { SiteFooter as FooterSection } from '~/lib/makeswift/components/site-footer/site-footer';
 
 import { FooterFragment } from './fragment';
 import { AmazonIcon } from './payment-icons/amazon';
