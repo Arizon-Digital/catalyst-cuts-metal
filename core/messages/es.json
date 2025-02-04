@@ -66,7 +66,7 @@
         "title": "Iniciar sesión",
         "heading": "Iniciar sesión",
         "Form": {
-            "invalidCredentials": "Tu dirección de correo electrónico o contraseña son incorrectas. Intenta iniciar sesión de nuevo o restablece tu contraseña",
+            "error": "Tu dirección de correo electrónico o contraseña son incorrectas. Intenta iniciar sesión de nuevo o restablece tu contraseña",
             "successful": "Has iniciado sesión correctamente.",
             "emailLabel": "Correo electrónico",
             "enterEmailMessage": "Introduzca su correo electrónico",
@@ -74,8 +74,7 @@
             "enterPasswordMessage": "Introduce tu contraseña.",
             "submitting": "Enviando...",
             "logIn": "Iniciar sesión",
-            "forgotPassword": "¿Olvidó su contraseña?",
-            "somethingWentWrong": "Algo salió mal. Vuelva a intentarlo más tarde."
+            "forgotPassword": "¿Olvidó su contraseña?"
         },
         "CreateAccount": {
             "heading": "¿Cliente nuevo?",
@@ -509,8 +508,8 @@
                 "logout": "Cerrar sesión"
             },
             "Currency": {
-                "invalidCurrency": "Moneda no válida",
-                "errorUpdatingCurrency": "Error al actualizar la moneda de tu carrito. Inténtalo de nuevo."
+                "invalidCurrency": "Invalid currency",
+                "errorUpdatingCurrency": "Error updating currency for your cart. Please try again."
             },
             "Locale": {
                 "invalidLocale": "Configuración regional no válida"

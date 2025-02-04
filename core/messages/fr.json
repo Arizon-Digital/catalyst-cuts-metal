@@ -66,7 +66,7 @@
         "title": "Connexion",
         "heading": "Connexion",
         "Form": {
-            "invalidCredentials": "Votre adresse e-mail ou votre mot de passe est incorrect. Essayez de vous reconnecter ou réinitialisez votre mot de passe",
+            "error": "Votre adresse e-mail ou votre mot de passe est incorrect. Essayez de vous reconnecter ou réinitialisez votre mot de passe",
             "successful": "Vous êtes connecté(e).",
             "emailLabel": "E-mail",
             "enterEmailMessage": "Saisissez votre adresse e-mail",
@@ -74,8 +74,7 @@
             "enterPasswordMessage": "Veuillez saisir votre mot de passe.",
             "submitting": "Envoi...",
             "logIn": "Connexion",
-            "forgotPassword": "Mot de passe oublié ?",
-            "somethingWentWrong": "Une erreur s'est produite. Veuillez réessayer plus tard."
+            "forgotPassword": "Mot de passe oublié ?"
         },
         "CreateAccount": {
             "heading": "Nouveau client ?",
@@ -509,8 +508,8 @@
                 "logout": "Déconnexion"
             },
             "Currency": {
-                "invalidCurrency": "Devise non valide",
-                "errorUpdatingCurrency": "Erreur lors de la mise à jour de la devise de votre panier. Veuillez réessayer."
+                "invalidCurrency": "Invalid currency",
+                "errorUpdatingCurrency": "Error updating currency for your cart. Please try again."
             },
             "Locale": {
                 "invalidLocale": "Paramètres régionaux non valides"
