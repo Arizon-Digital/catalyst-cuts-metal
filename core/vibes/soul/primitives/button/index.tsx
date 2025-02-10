@@ -45,13 +45,13 @@ export function Button({
         'relative z-0 inline-flex h-fit select-none items-center justify-center overflow-hidden border text-center font-[family-name:var(--button-font-family,var(--font-family-body))] font-semibold leading-normal after:absolute after:inset-0 after:-z-10 after:-translate-x-[105%] after:transition-[opacity,transform] after:duration-300 after:[animation-timing-function:cubic-bezier(0,0.25,0,1)] hover:after:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2',
         {
           primary:
-            'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#b22222]',
+            'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
           secondary:
-            'border-[var(--button-secondary-border,hsl(var(--foreground)))] bg-[var(--button-secondary-background,hsl(var(--foreground)))] text-[var(--button-secondary-foreground,hsl(var(--background)))] after:bg-[var(--button-secondary-background-hover,hsl(var(--background)))]',
+          'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
           tertiary:
-            'border-[var(--button-tertiary-border,hsl(var(--contrast-200)))] bg-[var(--button-tertiary-background,hsl(var(--background)))] text-[var(--button-tertiary-foreground,hsl(var(--foreground)))] after:bg-[var(--button-tertiary-background-hover,hsl(var(--contrast-100)))]',
+           'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
           ghost:
-            'border-[var(--button-ghost-border,transparent)] bg-[var(--button-ghost-background,transparent)] text-[var(--button-ghost-foreground,hsl(var(--foreground)))] after:bg-[var(--button-ghost-background-hover,hsl(var(--foreground)/5%))]',
+           'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
         }[variant],
         {
           pill: 'rounded-full after:rounded-full',
