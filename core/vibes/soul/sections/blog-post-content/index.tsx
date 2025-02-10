@@ -81,7 +81,7 @@ export function BlogPostContent({
                 {image?.src != null && image.src !== '' && (
                   <Image
                     alt={image.alt}
-                    className="mb-8 aspect-video w-full rounded-2xl bg-contrast-100 object-cover @2xl:mb-12 @4xl:mb-16"
+                    className="mb-8 aspect-video w-full rounded-2xl bg-contrast-100 @2xl:mb-12 @4xl:mb-16"
                     height={780}
                     src={image.src}
                     width={1280}

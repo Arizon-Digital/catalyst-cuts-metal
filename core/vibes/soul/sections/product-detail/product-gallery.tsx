@@ -44,7 +44,7 @@ export function ProductGallery({ images, className, thumbnailLabel = 'View image
             <div className="relative aspect-[4/5] w-full shrink-0 grow-0 basis-full" key={idx}>
               <Image
                 alt={image.alt}
-                className="object-cover"
+                className=""
                 fill
                 priority={idx === 0}
                 sizes="(min-width: 42rem) 50vw, 100vw"
@@ -69,7 +69,7 @@ export function ProductGallery({ images, className, thumbnailLabel = 'View image
           >
             <Image
               alt={image.alt}
-              className="bg-contrast-100 object-cover"
+              className="bg-contrast-100"
               fill
               sizes="(min-width: 28rem) 4rem, 3rem"
               src={image.src}

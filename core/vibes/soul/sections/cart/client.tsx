@@ -182,7 +182,7 @@ export function CartClient<LineItem extends CartLineItem>({
               <div className="relative aspect-square w-full max-w-24 overflow-hidden rounded-xl bg-contrast-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
                 <Image
                   alt={lineItem.image.alt}
-                  className="object-cover"
+                  className=""
                   fill
                   sizes="(min-width: 28rem) 9rem, (min-width: 24rem) 6rem, 100vw"
                   src={lineItem.image.src}
