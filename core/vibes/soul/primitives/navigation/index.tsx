@@ -12,7 +12,6 @@ import React, {
   forwardRef,
   Ref,
   startTransition,
-  useActionState,
   useCallback,
   useEffect,
   useMemo,
@@ -39,7 +38,6 @@ const STATIC_MENU_ITEMS = [
   { label: 'Safe Shopping', href: '/safe-shopping' },
   { label: 'Videos', href: '/videos' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Contact Us', href: '/contact' },
 ];
 
 // Types
@@ -125,7 +123,7 @@ const CategoryMenuItem = ({ item, onSelect }) => {
                       className="rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onSelect={(event) => {
                         event.preventDefault();
-                        onSelect && onSelect(link.href);
+                        onSelect?.(link.href);
                       }}
                     >
                       <Link href={link.href} className="block w-full">
@@ -147,7 +145,7 @@ const CategoryMenuItem = ({ item, onSelect }) => {
       className="rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-gray-100"
       onSelect={(event) => {
         event.preventDefault();
-        onSelect && onSelect(item.href);
+        onSelect?.(item.href);
       }}
     >
       <Link href={item.href} className="block w-full">
@@ -253,197 +251,235 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
   }, [pathname]);
 
   return (
-    <div 
-      className={clsx(
-        'relative w-full bg-black',
-        props.isFloating && 'shadow-lg',
-        props.className
-      )}
-      ref={ref}
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Left section with Logo and Shop Now dropdown */}
-          <div className="flex items-center gap-8">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Logo
-                className={clsx(props.mobileLogo != null ? 'hidden md:flex' : 'flex')}
-                height={props.logoHeight}
-                href={props.logoHref}
-                label={props.logoLabel}
-                logo={props.logo}
-                width={props.logoWidth}
-              />
-              {props.mobileLogo != null && (
-                <Logo
-                  className="flex md:hidden"
-                  height={props.mobileLogoHeight}
-                  href={props.logoHref}
-                  label={props.logoLabel}
-                  logo={props.mobileLogo}
-                  width={props.mobileLogoWidth}
-                />
-              )}
-            </div>
-
-            {/* Shop Now Dropdown - Hidden on mobile */}
-            <div className="hidden md:block">
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600">
-                  Shop Now
-                  <ChevronDown size={16} />
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content 
-                    className="relative z-50 min-w-[250px] rounded-lg bg-white p-2 shadow-xl" 
-                    sideOffset={5}
-                  >
-                    <Stream value={props.links}>
-                      {(links) => (
-                        <div className="grid grid-cols-1 gap-1">
-                          {Array.isArray(links) && links.map((item, index) => (
-                            <CategoryMenuItem 
-                              key={index} 
-                              item={item} 
-                              onSelect={handleLinkSelect}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </Stream>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Root>
-            </div>
-
-            {/* Static Menu Items */}
-            <div className="hidden md:flex space-x-8">
-              {STATIC_MENU_ITEMS.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="text-white hover:text-gray-200 text-sm font-medium"
-                >
-                  {item.label}
-                </Link>
-              ))}
+    <div>
+      {/* Promo Banner */}
+      <div className="w-full bg-gradient-to-r from-gray-900 to-black">
+        <div className="mx-auto flex max-w-7xl">
+          <div className="flex w-1/2 items-center justify-center py-2 px-4">
+            <div className="flex items-center space-x-2">
+              <svg 
+                className="h-6 w-6 text-red-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 3.5a6.5 6.5 0 00-6.5 6.5c0 3.588 2.912 6.5 6.5 6.5s6.5-2.912 6.5-6.5S13.588 3.5 10 3.5zm0 11a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
+              </svg>
+              <span className="text-sm font-medium text-white">
+                Free hat with orders over $750
+              </span>
             </div>
           </div>
-
-          {/* Right section - Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
-            <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-              <Popover.Trigger asChild>
-                <button 
-                  className="p-2 text-white hover:text-gray-200"
-                  aria-label={props.openSearchPopupLabel}
-                >
-                  <Search size={20} />
-                </button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content 
-                  className="z-50 w-screen max-w-xl rounded-lg bg-white shadow-xl"
-                  sideOffset={5}
-                >
-                  {props.searchAction && (
-                    <SearchForm
-                      searchAction={props.searchAction}
-                      searchCtaLabel={props.searchCtaLabel}
-                      searchHref={props.searchHref}
-                      searchInputPlaceholder={props.searchInputPlaceholder}
-                      searchParamName={props.searchParamName}
-                    />
-                  )}
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
-
-            {/* Account */}
-            <Link 
-              href={props.accountHref}
-              className="p-2 text-white hover:text-gray-200"
-              aria-label={props.accountLabel}
-            >
-              <User size={20} />
-            </Link>
-
-            {/* Cart */}
-            <Link 
-              href={props.cartHref}
-              className="p-2 text-white hover:text-gray-200 relative"
-              aria-label={props.cartLabel}
-            >
-              <ShoppingBag size={20} />
-              <Stream value={props.cartCount}>
-                {(count) =>
-                  count != null && count > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                      {count}
-                    </span>
-                  )
-                }
-              </Stream>
-            </Link>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200"
-              aria-expanded={isMobileMenuOpen}
-              aria-label={props.mobileMenuTriggerLabel}
-            >
-              <div className="space-y-1.5">
-                <span className={clsx(
-                  'block h-0.5 w-6 bg-current transform transition duration-200',
-                  isMobileMenuOpen && 'rotate-45 translate-y-2'
-                )} />
-                <span className={clsx(
-                  'block h-0.5 w-6 bg-current transition duration-200',
-                  isMobileMenuOpen && 'opacity-0'
-                )} />
-                <span className={clsx(
-                  'block h-0.5 w-6 bg-current transform transition duration-200',
-                  isMobileMenuOpen && '-rotate-45 -translate-y-2'
-                )} />
-              </div>
-            </button>
+          
+          <div className="flex w-1/2 items-center justify-center border-l border-gray-700 py-2 px-4">
+            <div className="flex items-center space-x-2">
+              <svg 
+                className="h-6 w-6 text-red-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M5.5 7a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5z"/>
+              </svg>
+              <span className="text-sm font-medium text-white">
+                Order by midnight & receive your order in 3-10 business days!
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="absolute inset-x-0 top-full bg-white shadow-lg md:hidden z-50">
-          <div className="divide-y divide-gray-200">
-            {/* Static Menu Items */}
-            <div className="px-2 py-3">
-              {STATIC_MENU_ITEMS.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                >
-                  {item.label}
-                </Link>
-              ))}
+      {/* Main Navigation */}
+      <div 
+        className={clsx(
+          'relative w-full bg-black',
+          props.isFloating && 'shadow-lg',
+          props.className
+        )}
+        ref={ref}
+      >
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Left section with Logo and Shop Now dropdown */}
+            <div className="flex items-center gap-8">
+              {/* Logo */}
+              <div className="flex items-center">
+                <Logo
+                  className={clsx(props.mobileLogo != null ? 'hidden md:flex' : 'flex')}
+                  height={props.logoHeight}
+                  href={props.logoHref}
+                  label={props.logoLabel}
+                  logo={props.logo}
+                  width={props.logoWidth}
+                />
+                {props.mobileLogo != null && (
+                  <Logo
+                    className="flex md:hidden"
+                    height={props.mobileLogoHeight}
+                    href={props.logoHref}
+                    label={props.logoLabel}
+                    logo={props.mobileLogo}
+                    width={props.mobileLogoWidth}
+                  />
+                )}
+              </div>
+
+              {/* Shop Now Dropdown - Hidden on mobile */}
+              <div className="hidden md:block">
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600">
+                    Shop Now
+                    <ChevronDown size={16} />
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content 
+                      className="relative z-50 min-w-[250px] rounded-lg bg-white p-2 shadow-xl" 
+                      sideOffset={5}
+                    >
+                      <Stream value={props.links}>
+                        {(links) => (
+                          <div className="grid grid-cols-1 gap-1">
+                            {Array.isArray(links) && links.map((item, index) => (
+                              <CategoryMenuItem 
+                                key={index} 
+                                item={item} 
+                                onSelect={handleLinkSelect}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </Stream>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+              </div>
+
+              {/* Static Menu Items */}
+              <div className="hidden md:flex space-x-8">
+                {STATIC_MENU_ITEMS.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className="text-white hover:text-gray-200 text-sm font-medium"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Categories */}
-            <Stream value={props.links}>
-              {(links) => (
-                <div className="py-3">
-                  {Array.isArray(links) && links.map((item, index) => (
-                    <MobileMenuItem key={index} item={item} />
-                  ))}
+            {/* Right section - Icons */}
+            <div className="flex items-center space-x-4">
+              {/* Search */}
+              <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                <Popover.Trigger asChild>
+                  <button 
+                    className="p-2 text-white hover:text-gray-200"
+                    aria-label={props.openSearchPopupLabel}
+                  >
+                    <Search size={20} />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content 
+                    className="z-50 w-screen max-w-xl rounded-lg bg-white shadow-xl"
+                    sideOffset={5}
+                  >
+                    {props.searchAction && (
+                      <SearchForm
+                        searchAction={props.searchAction}         
+                        searchCtaLabel={props.searchCtaLabel}
+                        searchHref={props.searchHref}
+                        searchInputPlaceholder={props.searchInputPlaceholder}
+                        searchParamName={props.searchParamName}
+                      />
+                    )}
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+
+              {/* Account */}
+              <Link 
+                href={props.accountHref}
+                className="p-2 text-white hover:text-gray-200"
+                aria-label={props.accountLabel}
+              >
+                <User size={20} />
+              </Link>
+
+              {/* Cart */}
+              <Link 
+                href={props.cartHref}
+                className="p-2 text-white hover:text-gray-200 relative"
+                aria-label={props.cartLabel}
+              >
+                <ShoppingBag size={20} />
+                <Stream value={props.cartCount}>
+                  {(count) =>
+                    count != null && count > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                        {count}
+                      </span>
+                    )
+                  }
+                </Stream>
+              </Link>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200"
+                aria-expanded={isMobileMenuOpen}
+                aria-label={props.mobileMenuTriggerLabel}
+              >
+                <div className="space-y-1.5">
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    isMobileMenuOpen && 'rotate-45 translate-y-2'
+                  )} />
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transition duration-200',
+                    isMobileMenuOpen && 'opacity-0'
+                  )} />
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    isMobileMenuOpen && '-rotate-45 -translate-y-2'
+                  )} />
                 </div>
-              )}
-            </Stream>
+              </button>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="absolute inset-x-0 top-full bg-white shadow-lg md:hidden z-50">
+            <div className="divide-y divide-gray-200">
+              {/* Static Menu Items */}
+              <div className="px-2 py-3">
+                {STATIC_MENU_ITEMS.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Categories */}
+              <Stream value={props.links}>
+                {(links) => (
+                  <div className="py-3">
+                    {Array.isArray(links) && links.map((item, index) => (
+                      <MobileMenuItem key={index} item={item} />
+                    ))}
+                  </div>
+                )}
+              </Stream>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 });
@@ -605,6 +641,25 @@ function SearchResults({
   );
 }
 
+// Types for search functionality
+interface SearchResult {
+  title: string;
+  type: 'products' | 'links';
+  products?: Array<{
+    id: string;
+    [key: string]: any;
+  }>;
+  links?: Array<{
+    label: string;
+    href: string;
+  }>;
+}
+
+type SearchAction<S extends SearchResult> = (formData: FormData) => Promise<SubmissionResult<{
+  searchResults: S[] | null;
+}>>;
+
 Navigation.displayName = 'Navigation';
 
+export type { Link, Props as NavigationProps, SearchResult };
 export default Navigation;
