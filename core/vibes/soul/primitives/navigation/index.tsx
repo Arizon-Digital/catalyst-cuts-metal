@@ -389,13 +389,11 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
         <div className="mx-auto flex max-w-7xl">
           <div className="flex w-1/2 items-center justify-center py-2 px-4">
             <div className="flex items-center space-x-2">
-              <svg 
-                className="h-6 w-6 text-red-600" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 3.5a6.5 6.5 0 00-6.5 6.5c0 3.588 2.912 6.5 6.5 6.5s6.5-2.912 6.5-6.5S13.588 3.5 10 3.5zm0 11a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
-              </svg>
+            <img
+        src="https://cdn2.bigcommerce.com/n-ww20x/ghm4gd08/templates/__custom/img/cap.png?t=1501592050" 
+        alt="Menu icon"
+        className="h-6 w-6 text-red-600"
+      />
               <span className="text-sm font-medium text-white">
                 Free hat with orders over $750
               </span>
@@ -404,13 +402,42 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
           
           <div className="flex w-1/2 items-center justify-center border-l border-gray-700 py-2 px-4">
             <div className="flex items-center space-x-2">
-              <svg 
-                className="h-6 w-6 text-red-600" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
-                <                path d="M5.5 7a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5z"/>
-              </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24" width="24">
+  <path
+    d="M12 2C12 2 8 6 8 13C8 15 9 17.5 10 19.5C10.5 20.5 11 21.5 11.5 22L12 22.5L12.5 22C13 21.5 13.5 20.5 14 19.5C15 17.5 16 15 16 13C16 6 12 2 12 2Z"
+    fill="#dc2626"
+    stroke="#b91c1c"
+    stroke-width="1"
+  />
+  <circle
+    cx="12"
+    cy="10"
+    r="2"
+    fill="#f8fafc"
+    stroke="#b91c1c"
+    stroke-width="0.5"
+  />
+  <path
+    d="M8 13C8 13 4 15 3 19.5L7 17.5C7.5 16.5 8 15 8 13Z"
+    fill="#dc2626"
+    stroke="#b91c1c"
+    stroke-width="1"
+  />
+  <path
+    d="M16 13C16 13 20 15 21 19.5L17 17.5C16.5 16.5 16 15 16 13Z"
+    fill="#dc2626"
+    stroke="#b91c1c"
+    stroke-width="1"
+  />
+  <path
+    d="M10.5 19.5C10.5 19.5 9 20.5 9.5 22C10 21 10.5 20 10.5 19.5Z"
+    fill="#f59e0b"
+  />
+  <path
+    d="M13.5 19.5C13.5 19.5 15 20.5 14.5 22C14 21 13.5 20 13.5 19.5Z"
+    fill="#f59e0b"
+  />
+</svg>
               <span className="text-sm font-medium text-white">
                 Order by midnight & receive your order in 3-10 business days!
               </span>

@@ -92,16 +92,16 @@ export const Footer = forwardRef(function Footer(
             <div>
               <h3 className="mb-4 font-semibold text-gray-700">Social Media</h3>
               <div className="flex gap-4">
-                <Link href="#" className="text-blue-600 hover:text-blue-800">
+                <Link href="https://www.facebook.com/Cutsmetalloveland?ref=hl" className="text-blue-600 hover:text-blue-800">
                   <Facebook size={24} />
                 </Link>
-                <Link href="#" className="text-red-600 hover:text-red-800">
+                <Link href="https://www.youtube.com/channel/UCbkSOBsMU4wF9B47pYrO7Wg" className="text-red-600 hover:text-red-800">
                   <Youtube size={24} />
                 </Link>
-                <Link href="#" className="text-blue-400 hover:text-blue-600">
+                <Link href="https://www.youtube.com/channel/UCbkSOBsMU4wF9B47pYrO7Wg" className="text-blue-400 hover:text-blue-600">
                   <Twitter size={24} />
                 </Link>
-                <Link href="#" className="text-red-600 hover:text-red-800">
+                <Link href="https://www.pinterest.com/cuts_metal/" className="text-red-600 hover:text-red-800">
                   <Mail size={24} />
                 </Link>
               </div>
