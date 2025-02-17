@@ -1,12 +1,10 @@
-
 'use client';
 
-import { SubmissionResult, useForm } from '@conform-to/react';
+import { clsx } from 'clsx';
+import debounce from 'lodash.debounce';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import * as Popover from '@radix-ui/react-popover';
-import { clsx } from 'clsx';
-import debounce from 'lodash.debounce';
 import { ArrowRight, ChevronDown, ChevronRight, Search, User, ShoppingBag } from 'lucide-react';
 import React, {
   forwardRef,
@@ -18,7 +16,6 @@ import React, {
   useState,
   useTransition,
 } from 'react';
-import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 import { FormStatus } from '@/vibes/soul/form/form-status';
@@ -32,12 +29,13 @@ import { usePathname } from '~/i18n/routing';
 
 // Static menu items
 const STATIC_MENU_ITEMS = [
-  { label: 'About Us', href: '/about' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'About Us', href: '/about' }, 
   { label: 'Customer Gallery', href: '/customer-gallery' },
   { label: 'Safe Shopping', href: '/safe-shopping' },
   { label: 'Videos', href: '/videos' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Shipping & returns', href: '/shipping-returns' },
+  { label: 'Contact Us', href: '/contact' },
 ];
 
 // Types
@@ -53,6 +51,24 @@ interface Link {
     }>;
   }>;
 }
+
+interface SearchResult {
+  title: string;
+  type: 'products' | 'links';
+  products?: Array<{
+    id: string;
+    [key: string]: any;
+  }>;
+  links?: Array<{
+    label: string;
+    href: string;
+  }>;
+}
+
+type SearchAction<S extends SearchResult> = (formData: FormData) => Promise<{
+  searchResults?: S[] | null;
+  error?: string;
+}>;
 
 interface Props<S extends SearchResult> {
   className?: string;
@@ -83,7 +99,7 @@ interface Props<S extends SearchResult> {
 }
 
 // CategoryMenuItem Component for desktop dropdown
-const CategoryMenuItem = ({ item, onSelect }) => {
+const CategoryMenuItem = ({ item, onSelect }: { item: Link; onSelect?: (href: string) => void }) => {
   if (item.groups && item.groups.length > 0) {
     return (
       <DropdownMenu.Sub>
@@ -155,8 +171,8 @@ const CategoryMenuItem = ({ item, onSelect }) => {
   );
 };
 
-// MobileMenuItem Component for expandable mobile menu
-const MobileMenuItem = ({ item }) => {
+// MobileMenuItem Component
+const MobileMenuItem = ({ item }: { item: Link }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   return (
@@ -231,6 +247,211 @@ const MobileMenuItem = ({ item }) => {
   );
 };
 
+// SearchForm Component
+function SearchForm<S extends SearchResult>({
+  searchAction,
+  searchParamName = 'query',
+  searchHref = '/search',
+  searchInputPlaceholder = 'Search products...',
+  searchCtaLabel = 'View all results',
+  submitLabel = 'Search',
+}: {
+  searchAction: SearchAction<S>;
+  searchParamName?: string;
+  searchHref?: string;
+  searchCtaLabel?: string;
+  searchInputPlaceholder?: string;
+  submitLabel?: string;
+}) {
+  const [query, setQuery] = useState('');
+  const [isSearching, startSearching] = useTransition();
+  const [searchResults, setSearchResults] = useState<S[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isDebouncing, setIsDebouncing] = useState(false);
+  const isPending = isSearching || isDebouncing;
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (searchQuery: string) => {
+        setIsDebouncing(false);
+        if (!searchQuery.trim()) {
+          setSearchResults(null);
+          setError(null);
+          return;
+        }
+
+        try {
+          startSearching(async () => {
+            try {
+              const formData = new FormData();
+              formData.append(searchParamName, searchQuery);
+              
+              // Add error boundary around the searchAction call
+              let result;
+              try {
+                result = await searchAction(formData);
+              } catch (searchError: any) {
+                console.error('Search action error:', searchError);
+                throw new Error('Failed to perform search. Please try again.');
+              }
+
+              // Validate the result structure
+              if (!result || (typeof result !== 'object')) {
+                throw new Error('Invalid search response format');
+              }
+
+              if ('error' in result) {
+                setError(result.error || 'An error occurred during search');
+                setSearchResults(null);
+              } else if ('searchResults' in result) {
+                if (Array.isArray(result.searchResults)) {
+                  setSearchResults(result.searchResults);
+                  setError(null);
+                } else {
+                  throw new Error('Invalid search results format');
+                }
+              } else {
+                throw new Error('Invalid search response structure');
+              }
+            } catch (err: any) {
+              console.error('Search processing error:', err);
+              setError(err.message || 'An error occurred while searching. Please try again.');
+              setSearchResults(null);
+            }
+          });
+        } catch (err: any) {
+          console.error('Search wrapper error:', err);
+          setError('Failed to initiate search. Please try again.');
+          setSearchResults(null);
+        } finally {
+          setIsDebouncing(false);
+        }
+      }, 300),
+    [searchAction, searchParamName]
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    setIsDebouncing(true);
+    debouncedSearch(value);
+  };
+
+  return (
+    <div className="p-4">
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={handleSearch}
+          placeholder={searchInputPlaceholder}
+          className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2"
+        />
+        <Search 
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          size={20} 
+        />
+      </div>
+
+      <SearchResults
+        query={query}
+        searchResults={searchResults}
+        stale={isPending}
+        searchCtaLabel={searchCtaLabel}
+        searchParamName={searchParamName}
+        errors={error ? [error] : undefined}
+      />
+    </div>
+  );
+}
+
+// SearchResults Component
+function SearchResults({
+  query,
+  searchResults,
+  stale,
+  emptySearchTitle,
+  emptySearchSubtitle = 'Please try another search.',
+  errors,
+  searchCtaLabel,
+  searchParamName,
+}: {
+  query: string;
+  searchParamName: string;
+  searchCtaLabel?: string;
+  emptySearchTitle?: string;
+  emptySearchSubtitle?: string;
+  searchResults: SearchResult[] | null;
+  stale: boolean;
+  errors?: string[];
+}) {
+  // Safe empty search title that won't cause issues with empty query
+  const safeEmptySearchTitle = emptySearchTitle || (query ? `No results were found for '${query}'` : 'No results found');
+  if (query === '') return null;
+
+  if (errors?.length) {
+    if (stale) return null;
+    return (
+      <div className="flex flex-col border-t border-gray-200 p-6">
+        {errors.map((error) => (
+          <FormStatus key={error} type="error">
+            {error}
+          </FormStatus>
+        ))}
+      </div>
+    );
+  }
+
+  if (!searchResults?.length) {
+    if (stale) return null;
+    return (
+      <div className="flex flex-col border-t border-gray-200 p-6">
+        <p className="text-2xl font-medium text-gray-900">{emptySearchTitle}</p>
+        <p className="text-gray-500">{emptySearchSubtitle}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={clsx(
+      'flex flex-col border-t border-gray-200 md:flex-row',
+      stale && 'opacity-50'
+    )}>
+      {searchResults.map((result, index) => (
+        <div key={index} className="p-4">
+          <h3 className="mb-4 text-sm font-semibold uppercase">
+            {result.title}
+          </h3>
+          {result.type === 'products' ? (
+            <div className="grid grid-cols-2 gap-4">
+              {result.products?.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  imageSizes="(min-width: 1024px) 25vw, 50vw"
+                />
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {result.links?.map((link, i) => (
+                <li key={i}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Main Navigation Component
 export const Navigation = forwardRef(function Navigation<S extends SearchResult>(
   props: Props<S>,
@@ -296,7 +517,7 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
         )}
         ref={ref}
       >
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[85rm]xl sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Left section with Logo and Shop Now dropdown */}
             <div className="flex items-center gap-8">
@@ -483,181 +704,6 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
     </div>
   );
 });
-
-// Search Form Component
-function SearchForm<S extends SearchResult>({
-  searchAction,
-  searchParamName = 'query',
-  searchHref = '/search',
-  searchInputPlaceholder = 'Search products...',
-  searchCtaLabel = 'View all results',
-  submitLabel = 'Search',
-}: {
-  searchAction: SearchAction<S>;
-  searchParamName?: string;
-  searchHref?: string;
-  searchCtaLabel?: string;
-  searchInputPlaceholder?: string;
-  submitLabel?: string;
-}) {
-  const [query, setQuery] = useState('');
-  const [isSearching, startSearching] = useTransition();
-  const [{ searchResults, lastResult }, formAction] = useActionState(searchAction, {
-    searchResults: null,
-    lastResult: null,
-  });
-  const [isDebouncing, setIsDebouncing] = useState(false);
-  const isPending = isSearching || isDebouncing;
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((searchQuery: string) => {
-        setIsDebouncing(false);
-        const formData = new FormData();
-        formData.append(searchParamName, searchQuery);
-        startSearching(() => {
-          formAction(formData);
-        });
-      }, 300),
-    [formAction, searchParamName]
-  );
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setIsDebouncing(true);
-    debouncedSearch(value);
-  };
-
-  return (
-    <div className="p-4">
-      <div className="relative">
-        <input
-          type="text"
-          value={query}
-          onChange={handleSearch}
-          placeholder={searchInputPlaceholder}
-          className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2"
-        />
-        <Search 
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
-          size={20} 
-        />
-      </div>
-
-      <SearchResults
-        query={query}
-        searchResults={searchResults}
-        stale={isPending}
-        searchCtaLabel={searchCtaLabel}
-        searchParamName={searchParamName}
-      />
-    </div>
-  );
-}
-
-// Search Results Component
-function SearchResults({
-  query,
-  searchResults,
-  stale,
-  emptySearchTitle = `No results were found for '${query}'`,
-  emptySearchSubtitle = 'Please try another search.',
-  errors,
-  searchCtaLabel,
-  searchParamName,
-}: {
-  query: string;
-  searchParamName: string;
-  searchCtaLabel?: string;
-  emptySearchTitle?: string;
-  emptySearchSubtitle?: string;
-  searchResults: SearchResult[] | null;
-  stale: boolean;
-  errors?: string[];
-}) {
-  if (query === '') return null;
-
-  if (errors?.length) {
-    if (stale) return null;
-    return (
-      <div className="flex flex-col border-t border-gray-200 p-6">
-        {errors.map((error) => (
-          <FormStatus key={error} type="error">
-            {error}
-          </FormStatus>
-        ))}
-      </div>
-    );
-  }
-
-  if (!searchResults?.length) {
-    if (stale) return null;
-    return (
-      <div className="flex flex-col border-t border-gray-200 p-6">
-        <p className="text-2xl font-medium text-gray-900">{emptySearchTitle}</p>
-        <p className="text-gray-500">{emptySearchSubtitle}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className={clsx(
-      'flex flex-col border-t border-gray-200 md:flex-row',
-      stale && 'opacity-50'
-    )}>
-      {searchResults.map((result, index) => (
-        <div key={index} className="p-4">
-          <h3 className="mb-4 text-sm font-semibold uppercase">
-            {result.title}
-          </h3>
-          {result.type === 'products' ? (
-            <div className="grid grid-cols-2 gap-4">
-              {result.products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  imageSizes="(min-width: 1024px) 25vw, 50vw"
-                />
-              ))}
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {result.links.map((link, i) => (
-                <li key={i}>
-                  <Link
-                    href={link.href}
-                    className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Types for search functionality
-interface SearchResult {
-  title: string;
-  type: 'products' | 'links';
-  products?: Array<{
-    id: string;
-    [key: string]: any;
-  }>;
-  links?: Array<{
-    label: string;
-    href: string;
-  }>;
-}
-
-type SearchAction<S extends SearchResult> = (formData: FormData) => Promise<SubmissionResult<{
-  searchResults: S[] | null;
-}>>;
 
 Navigation.displayName = 'Navigation';
 
