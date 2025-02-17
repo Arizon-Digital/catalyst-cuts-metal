@@ -1,5 +1,8 @@
+
+
+
 import { Sliders } from 'lucide-react';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react'; 
 
 import { Stream, Streamable } from '@/vibes/soul/lib/streamable';
 import { Breadcrumb, Breadcrumbs, BreadcrumbsSkeleton } from '@/vibes/soul/primitives/breadcrumbs';
@@ -17,6 +20,7 @@ import {
 interface Props {
   breadcrumbs?: Streamable<Breadcrumb[]>;
   title?: Streamable<string | null>;
+  description?: Streamable<string | null>;
   totalCount: Streamable<number>;
   products: Streamable<ListProduct[]>;
   filters: Streamable<Filter[]>;
@@ -42,6 +46,7 @@ interface Props {
 export function ProductsListSection({
   breadcrumbs: streamableBreadcrumbs,
   title = 'Products',
+  description,
   totalCount,
   products,
   compareProducts,
@@ -72,67 +77,86 @@ export function ProductsListSection({
               breadcrumbs && breadcrumbs.length > 1 && <Breadcrumbs breadcrumbs={breadcrumbs} />
             }
           </Stream>
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-8 pt-6 text-foreground">
-            <h1 className="flex items-center gap-2 font-heading text-3xl font-medium leading-none @lg:text-4xl @2xl:text-5xl">
-              <Suspense
-                fallback={
-                  <span className="inline-flex h-[1lh] w-[6ch] animate-pulse rounded-lg bg-contrast-100" />
-                }
-              >
-                {title}
-              </Suspense>
-              <Suspense
-                fallback={
-                  <span className="inline-flex h-[1lh] w-[2ch] animate-pulse rounded-lg bg-contrast-100" />
-                }
-              >
-                <span className="text-contrast-300">{totalCount}</span>
-              </Suspense>
-            </h1>
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-4 pb-8 pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 text-foreground">
+              <h1 className="flex items-center gap-2 font-heading text-3xl font-medium leading-none @lg:text-4xl @2xl:text-5xl">
+                <Suspense
+                  fallback={
+                    <span className="inline-flex h-[1lh] w-[6ch] animate-pulse rounded-lg bg-contrast-100" />
+                  }
+                >
+                  {title}
+                </Suspense>
+                <Suspense
+                  fallback={
+                    <span className="inline-flex h-[1lh] w-[2ch] animate-pulse rounded-lg bg-contrast-100" />
+                  }
+                >
+                  <span className="text-contrast-300">{totalCount}</span>
+                </Suspense>
+              </h1>
+              <div className="flex gap-2">
+                <Stream
+                  fallback={<SortingSkeleton />}
+                  value={Streamable.all([
+                    streamableSortLabel,
+                    streamableSortOptions,
+                    streamableSortPlaceholder,
+                  ])}
+                >
+                  {([label, options, placeholder]) => (
+                    <Sorting
+                      defaultValue={sortDefaultValue}
+                      label={label}
+                      options={options}
+                      paramName={sortParamName}
+                      placeholder={placeholder}
+                    />
+                  )}
+                </Stream>
+                <div className="block @3xl:hidden">
+                  <SidePanel.Root>
+                    <SidePanel.Trigger asChild>
+                      <Button size="medium" variant="secondary">
+                        {filterLabel}
+                        <span className="hidden @xl:block">
+                          <Sliders size={20} />
+                        </span>
+                      </Button>
+                    </SidePanel.Trigger>
+                    <Stream value={streamableFiltersPanelTitle}>
+                      {(filtersPanelTitle) => (
+                        <SidePanel.Content title={<h2>{filtersPanelTitle}</h2>}>
+                          <FiltersPanel
+                            filters={filters}
+                            paginationInfo={paginationInfo}
+                            rangeFilterApplyLabel={rangeFilterApplyLabel}
+                            resetFiltersLabel={resetFiltersLabel}
+                          />
+                        </SidePanel.Content>
+                      )}
+                    </Stream>
+                  </SidePanel.Root>
+                </div>
+              </div>
+            </div>
+            
+            {/* Description section */}
+            {description && (
               <Stream
-                fallback={<SortingSkeleton />}
-                value={Streamable.all([
-                  streamableSortLabel,
-                  streamableSortOptions,
-                  streamableSortPlaceholder,
-                ])}
+                fallback={
+                  <div className="h-20 w-full animate-pulse rounded-lg bg-contrast-100" />
+                }
+                value={description}
               >
-                {([label, options, placeholder]) => (
-                  <Sorting
-                    defaultValue={sortDefaultValue}
-                    label={label}
-                    options={options}
-                    paramName={sortParamName}
-                    placeholder={placeholder}
+                {(desc) => desc && (
+                  <div 
+                    className="prose max-w-none text-contrast-600"
+                    dangerouslySetInnerHTML={{ __html: desc }} 
                   />
                 )}
               </Stream>
-              <div className="block @3xl:hidden">
-                <SidePanel.Root>
-                  <SidePanel.Trigger asChild>
-                    <Button size="medium" variant="secondary">
-                      {filterLabel}
-                      <span className="hidden @xl:block">
-                        <Sliders size={20} />
-                      </span>
-                    </Button>
-                  </SidePanel.Trigger>
-                  <Stream value={streamableFiltersPanelTitle}>
-                    {(filtersPanelTitle) => (
-                      <SidePanel.Content title={<h2>{filtersPanelTitle}</h2>}>
-                        <FiltersPanel
-                          filters={filters}
-                          paginationInfo={paginationInfo}
-                          rangeFilterApplyLabel={rangeFilterApplyLabel}
-                          resetFiltersLabel={resetFiltersLabel}
-                        />
-                      </SidePanel.Content>
-                    )}
-                  </Stream>
-                </SidePanel.Root>
-              </div>
-            </div>
+            )}
           </div>
         </div>
         <div className="flex items-stretch gap-8 @4xl:gap-10">

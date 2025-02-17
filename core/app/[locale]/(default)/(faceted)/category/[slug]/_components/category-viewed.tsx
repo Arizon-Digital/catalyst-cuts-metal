@@ -1,3 +1,6 @@
+
+
+
 'use client';
 
 import { removeEdgesAndNodes } from '@bigcommerce/catalyst-client';
@@ -39,6 +42,7 @@ export const CategoryViewed = ({ categoryId, category, products }: Props) => {
     bodl.navigation.categoryViewed({
       category_id: categoryId,
       category_name: category?.name ?? '',
+      category_description: category?.description ?? '', 
       line_items: products.map((p) => productItemTransform(p, category)),
     });
   }, [category, categoryId, products]);
