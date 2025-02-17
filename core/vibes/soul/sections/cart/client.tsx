@@ -60,7 +60,7 @@ export interface Props<LineItem extends CartLineItem> {
 const defaultEmptyState = {
   title: 'Your cart is empty',
   subtitle: 'Add some products to get started.',
-  cta: { label: 'Continue shopping', href: '#' },
+  cta: { label: 'Continue shopping', href: '/' },
 };
 
 export function CartClient<LineItem extends CartLineItem>({

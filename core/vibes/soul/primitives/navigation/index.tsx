@@ -1,22 +1,24 @@
 'use client';
 
-import { clsx } from 'clsx';
-import debounce from 'lodash.debounce';
+import { SubmissionResult, useForm } from '@conform-to/react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import * as Popover from '@radix-ui/react-popover';
+import { clsx } from 'clsx';
+import debounce from 'lodash.debounce';
 import { ArrowRight, ChevronDown, ChevronRight, Search, User, ShoppingBag } from 'lucide-react';
 import React, {
   forwardRef,
   Ref,
   startTransition,
+  useActionState,
   useCallback,
   useEffect,
   useMemo,
   useState,
   useTransition,
 } from 'react';
-import { useRouter } from 'next/navigation';
+import { useFormStatus } from 'react-dom';
 
 import { FormStatus } from '@/vibes/soul/form/form-status';
 import { Stream, Streamable } from '@/vibes/soul/lib/streamable';
@@ -38,7 +40,7 @@ const STATIC_MENU_ITEMS = [
   { label: 'Contact Us', href: '/contact' },
 ];
 
-// Types
+// Reuse existing types from original code
 interface Link {
   label: string;
   href: string;
@@ -52,23 +54,35 @@ interface Link {
   }>;
 }
 
-interface SearchResult {
-  title: string;
-  type: 'products' | 'links';
-  products?: Array<{
-    id: string;
-    [key: string]: any;
-  }>;
-  links?: Array<{
-    label: string;
-    href: string;
-  }>;
-}
+export type SearchResult =
+  | {
+      type: 'products';
+      title: string;
+      products: Array<{
+        id: string;
+        title: string;
+        href: string;
+        price?: Price;
+        image?: { src: string; alt: string };
+      }>;
+    }
+  | {
+      type: 'links';
+      title: string;
+      links: Array<{ label: string; href: string }>;
+    };
 
-type SearchAction<S extends SearchResult> = (formData: FormData) => Promise<{
-  searchResults?: S[] | null;
-  error?: string;
-}>;
+type LocaleAction = Action<SubmissionResult | null, FormData>;
+type CurrencyAction = Action<SubmissionResult | null, FormData>;
+type SearchAction<S extends SearchResult> = Action<
+  {
+    searchResults: S[] | null;
+    lastResult: SubmissionResult | null;
+    emptyStateTitle?: string;
+    emptyStateSubtitle?: string;
+  },
+  FormData
+>;
 
 interface Props<S extends SearchResult> {
   className?: string;
@@ -98,7 +112,7 @@ interface Props<S extends SearchResult> {
   mobileLogoHeight?: number;
 }
 
-// CategoryMenuItem Component for desktop dropdown
+// Utility Component for Category Dropdown Item
 const CategoryMenuItem = ({ item, onSelect }: { item: Link; onSelect?: (href: string) => void }) => {
   if (item.groups && item.groups.length > 0) {
     return (
@@ -171,7 +185,443 @@ const CategoryMenuItem = ({ item, onSelect }: { item: Link; onSelect?: (href: st
   );
 };
 
-// MobileMenuItem Component
+// SearchForm Component
+function SearchForm<S extends SearchResult>({
+  searchAction,
+  searchParamName = 'query',
+  searchHref,
+  searchInputPlaceholder = 'Search products...',
+  searchCtaLabel = 'View all results',
+}: {
+  searchAction: SearchAction<S>;
+  searchParamName?: string;
+  searchHref: string;
+  searchInputPlaceholder?: string;
+  searchCtaLabel?: string;
+}) {
+  const [query, setQuery] = useState('');
+  const [isSearching, startSearching] = useTransition();
+  const [{ searchResults, lastResult }, formAction] = useActionState(searchAction, {
+    searchResults: null,
+    lastResult: null,
+  });
+  const [isDebouncing, setIsDebouncing] = useState(false);
+  const isPending = isSearching || isDebouncing;
+
+  const debouncedOnChange = useMemo(() => {
+    const debounced = debounce((q: string) => {
+      setIsDebouncing(false);
+
+      const formData = new FormData();
+      formData.append(searchParamName, q);
+
+      startSearching(() => {
+        formAction(formData);
+      });
+    }, 300);
+
+    return (q: string) => {
+      setIsDebouncing(true);
+      debounced(q);
+    };
+  }, [formAction, searchParamName]);
+
+  const [form] = useForm({ lastResult });
+
+  return (
+    <div className="p-4">
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            debouncedOnChange(e.target.value);
+          }}
+          placeholder={searchInputPlaceholder}
+          className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2"
+        />
+        <Search 
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
+          size={20} 
+        />
+      </div>
+
+      <SearchResults
+        query={query}
+        searchParamName={searchParamName}
+        searchCtaLabel={searchCtaLabel}
+        searchResults={searchResults}
+        stale={isPending}
+        errors={form.errors}
+      />
+    </div>
+  );
+}
+
+// SearchResults Component
+function SearchResults({
+  query,
+  searchResults,
+  stale,
+  errors,
+  searchParamName,
+  searchCtaLabel,
+}: {
+  query: string;
+  searchResults: SearchResult[] | null;
+  stale: boolean;
+  errors?: string[];
+  searchParamName: string;
+  searchCtaLabel?: string;
+}) {
+  if (query === '') return null;
+
+  if (errors?.length) {
+    if (stale) return null;
+    return (
+      <div className="flex flex-col border-t border-gray-200 p-6">
+        {errors.map((error) => (
+          <FormStatus key={error} type="error">
+            {error}
+          </FormStatus>
+        ))}
+      </div>
+    );
+  }
+
+  if (!searchResults?.length) {
+    if (stale) return null;
+    return (
+      <div className="flex flex-col border-t border-gray-200 p-6">
+        <p className="text-2xl font-medium text-gray-900">No results were found for '{query}'</p>
+        <p className="text-gray-500">Please try another search.</p>
+      </div>
+    );
+  }
+
+  return (
+   // Original structure maintained, only CSS modified
+<div className={clsx(
+  'flex flex-col space-y-6 border-t border-gray-200 md:flex-row md:space-y-0 w-full',
+  stale && 'opacity-50'
+)}>
+  {searchResults.map((result, index) => (
+    <div key={index} className="p-4 flex-1">
+      <h3 className="mb-6 text-sm font-semibold uppercase">
+        {result.title}
+      </h3>
+      {result.type === 'products' ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-2">
+          {result.products?.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              imageSizes="(min-width: 1024px) 25vw, 50vw"
+            />
+          ))}
+        </div>
+      
+  
+          ) : (
+            <ul className="space-y-2">
+              {result.links?.map((link, i) => (
+                <li key={i}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Main Navigation Component
+export const Navigation = forwardRef(function Navigation<S extends SearchResult>(
+  {
+    className,
+    isFloating = false,
+    cartHref,
+    cartCount: streamableCartCount,
+    accountHref,
+    links: streamableLinks,
+    logo: streamableLogo,
+    logoHref = '/',
+    logoLabel = 'Home',
+    logoWidth = 200,
+    logoHeight = 40,
+    mobileLogo: streamableMobileLogo,
+    mobileLogoWidth = 100,
+    mobileLogoHeight = 40,
+    searchHref,
+    searchParamName = 'query',
+    searchAction,
+    searchCtaLabel,
+    searchInputPlaceholder,
+    cartLabel = 'Cart',
+    accountLabel = 'Profile',
+    openSearchPopupLabel = 'Open search popup',
+    searchLabel = 'Search',
+    mobileMenuTriggerLabel = 'Toggle navigation',
+  }: Props<S>,
+  ref: Ref<HTMLDivElement>,
+) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
+  }, [pathname]);
+
+  return (
+    <div>
+      {/* Promo Banner */}
+      <div className="w-full bg-gradient-to-r from-gray-900 to-black">
+        <div className="mx-auto flex max-w-7xl">
+          <div className="flex w-1/2 items-center justify-center py-2 px-4">
+            <div className="flex items-center space-x-2">
+              <svg 
+                className="h-6 w-6 text-red-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 3.5a6.5 6.5 0 00-6.5 6.5c0 3.588 2.912 6.5 6.5 6.5s6.5-2.912 6.5-6.5S13.588 3.5 10 3.5zm0 11a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
+              </svg>
+              <span className="text-sm font-medium text-white">
+                Free hat with orders over $750
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex w-1/2 items-center justify-center border-l border-gray-700 py-2 px-4">
+            <div className="flex items-center space-x-2">
+              <svg 
+                className="h-6 w-6 text-red-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <                path d="M5.5 7a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5z"/>
+              </svg>
+              <span className="text-sm font-medium text-white">
+                Order by midnight & receive your order in 3-10 business days!
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <div 
+        className={clsx(
+          'relative w-full bg-black',
+          isFloating && 'shadow-lg',
+          className
+        )}
+        ref={ref}
+      >
+        <div className="mx-auto max-w-[85rem] sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Left section with Logo and Shop Now dropdown */}
+            <div className="flex items-center gap-8">
+              {/* Logo */}
+              <div className="flex items-center">
+                <Logo
+                  className={clsx(streamableMobileLogo != null ? 'hidden md:flex' : 'flex')}
+                  height={logoHeight}
+                  href={logoHref}
+                  label={logoLabel}
+                  logo={streamableLogo}
+                  width={logoWidth}
+                />
+                {streamableMobileLogo != null && (
+                  <Logo
+                    className="flex md:hidden"
+                    height={mobileLogoHeight}
+                    href={logoHref}
+                    label={logoLabel}
+                    logo={streamableMobileLogo}
+                    width={mobileLogoWidth}
+                  />
+                )}
+              </div>
+
+              {/* Shop Now Dropdown - Hidden on mobile */}
+              <div className="hidden md:block">
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600">
+                    Shop Now
+                    <ChevronDown size={16} />
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content 
+                      className="relative z-50 min-w-[250px] rounded-lg bg-white p-2 shadow-xl" 
+                      sideOffset={5}
+                    >
+                      <Stream value={streamableLinks}>
+                        {(links) => (
+                          <div className="grid grid-cols-1 gap-1">
+                            {Array.isArray(links) && links.map((item, index) => (
+                              <CategoryMenuItem 
+                                key={index} 
+                                item={item} 
+                                onSelect={(href) => {
+                                  // You might want to replace this with your routing logic
+                                  window.location.href = href;
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </Stream>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+              </div>
+
+              {/* Static Menu Items */}
+              <div className="hidden md:flex space-x-8">
+                {STATIC_MENU_ITEMS.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className="text-white hover:text-gray-200 text-sm font-medium"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right section - Icons */}
+            <div className="flex items-center space-x-4">
+              {/* Search */}
+              <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                <Popover.Trigger asChild>
+                  <button 
+                    className="p-2 text-white hover:text-gray-200"
+                    aria-label={openSearchPopupLabel}
+                  >
+                    <Search size={20} />
+                  </button>
+                </Popover.Trigger>
+                <Popover.Portal>
+                  <Popover.Content 
+                    className="z-50 w-screen  rounded-lg bg-white shadow-xl"
+                    sideOffset={5}
+                  >
+                    {searchAction && (
+                      <SearchForm
+                        searchAction={searchAction}         
+                        searchCtaLabel={searchCtaLabel}
+                        searchHref={searchHref}
+                        searchInputPlaceholder={searchInputPlaceholder}
+                        searchParamName={searchParamName}
+                      />
+                    )}
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
+
+              {/* Account */}
+              <Link 
+                href={accountHref}
+                className="p-2 text-white hover:text-gray-200"
+                aria-label={accountLabel}
+              >
+                <User size={20} />
+              </Link>
+
+              {/* Cart */}
+              <Link 
+                href={cartHref}
+                className="p-2 text-white hover:text-gray-200 relative"
+                aria-label={cartLabel}
+              >
+                <ShoppingBag size={20} />
+                <Stream value={streamableCartCount}>
+                  {(count) =>
+                    count != null && count > 0 && (
+                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                        {count}
+                      </span>
+                    )
+                  }
+                </Stream>
+              </Link>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200"
+                aria-expanded={isMobileMenuOpen}
+                aria-label={mobileMenuTriggerLabel}
+              >
+                <div className="space-y-1.5">
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    isMobileMenuOpen && 'rotate-45 translate-y-2'
+                  )} />
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transition duration-200',
+                    isMobileMenuOpen && 'opacity-0'
+                  )} />
+                  <span className={clsx(
+                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    isMobileMenuOpen && '-rotate-45 -translate-y-2'
+                  )} />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="absolute inset-x-0 top-full bg-white shadow-lg md:hidden z-50">
+            <div className="divide-y divide-gray-200">
+              {/* Static Menu Items */}
+              <div className="px-2 py-3">
+                {STATIC_MENU_ITEMS.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href}
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Categories */}
+              <Stream value={streamableLinks}>
+                {(links) => (
+                  <div className="py-3">
+                    {Array.isArray(links) && links.map((item, index) => (
+                      <MobileMenuItem key={index} item={item} />
+                    ))}
+                  </div>
+                )}
+              </Stream>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+Navigation.displayName = 'Navigation';
+
+// Mobile Menu Item Component
 const MobileMenuItem = ({ item }: { item: Link }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -246,466 +696,6 @@ const MobileMenuItem = ({ item }: { item: Link }) => {
     </div>
   );
 };
-
-// SearchForm Component
-function SearchForm<S extends SearchResult>({
-  searchAction,
-  searchParamName = 'query',
-  searchHref = '/search',
-  searchInputPlaceholder = 'Search products...',
-  searchCtaLabel = 'View all results',
-  submitLabel = 'Search',
-}: {
-  searchAction: SearchAction<S>;
-  searchParamName?: string;
-  searchHref?: string;
-  searchCtaLabel?: string;
-  searchInputPlaceholder?: string;
-  submitLabel?: string;
-}) {
-  const [query, setQuery] = useState('');
-  const [isSearching, startSearching] = useTransition();
-  const [searchResults, setSearchResults] = useState<S[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isDebouncing, setIsDebouncing] = useState(false);
-  const isPending = isSearching || isDebouncing;
-
-  const debouncedSearch = useMemo(
-    () =>
-      debounce(async (searchQuery: string) => {
-        setIsDebouncing(false);
-        if (!searchQuery.trim()) {
-          setSearchResults(null);
-          setError(null);
-          return;
-        }
-
-        try {
-          startSearching(async () => {
-            try {
-              const formData = new FormData();
-              formData.append(searchParamName, searchQuery);
-              
-              // Add error boundary around the searchAction call
-              let result;
-              try {
-                result = await searchAction(formData);
-              } catch (searchError: any) {
-                console.error('Search action error:', searchError);
-                throw new Error('Failed to perform search. Please try again.');
-              }
-
-              // Validate the result structure
-              if (!result || (typeof result !== 'object')) {
-                throw new Error('Invalid search response format');
-              }
-
-              if ('error' in result) {
-                setError(result.error || 'An error occurred during search');
-                setSearchResults(null);
-              } else if ('searchResults' in result) {
-                if (Array.isArray(result.searchResults)) {
-                  setSearchResults(result.searchResults);
-                  setError(null);
-                } else {
-                  throw new Error('Invalid search results format');
-                }
-              } else {
-                throw new Error('Invalid search response structure');
-              }
-            } catch (err: any) {
-              console.error('Search processing error:', err);
-              setError(err.message || 'An error occurred while searching. Please try again.');
-              setSearchResults(null);
-            }
-          });
-        } catch (err: any) {
-          console.error('Search wrapper error:', err);
-          setError('Failed to initiate search. Please try again.');
-          setSearchResults(null);
-        } finally {
-          setIsDebouncing(false);
-        }
-      }, 300),
-    [searchAction, searchParamName]
-  );
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setIsDebouncing(true);
-    debouncedSearch(value);
-  };
-
-  return (
-    <div className="p-4">
-      <div className="relative">
-        <input
-          type="text"
-          value={query}
-          onChange={handleSearch}
-          placeholder={searchInputPlaceholder}
-          className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2"
-        />
-        <Search 
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" 
-          size={20} 
-        />
-      </div>
-
-      <SearchResults
-        query={query}
-        searchResults={searchResults}
-        stale={isPending}
-        searchCtaLabel={searchCtaLabel}
-        searchParamName={searchParamName}
-        errors={error ? [error] : undefined}
-      />
-    </div>
-  );
-}
-
-// SearchResults Component
-function SearchResults({
-  query,
-  searchResults,
-  stale,
-  emptySearchTitle,
-  emptySearchSubtitle = 'Please try another search.',
-  errors,
-  searchCtaLabel,
-  searchParamName,
-}: {
-  query: string;
-  searchParamName: string;
-  searchCtaLabel?: string;
-  emptySearchTitle?: string;
-  emptySearchSubtitle?: string;
-  searchResults: SearchResult[] | null;
-  stale: boolean;
-  errors?: string[];
-}) {
-  // Safe empty search title that won't cause issues with empty query
-  const safeEmptySearchTitle = emptySearchTitle || (query ? `No results were found for '${query}'` : 'No results found');
-  if (query === '') return null;
-
-  if (errors?.length) {
-    if (stale) return null;
-    return (
-      <div className="flex flex-col border-t border-gray-200 p-6">
-        {errors.map((error) => (
-          <FormStatus key={error} type="error">
-            {error}
-          </FormStatus>
-        ))}
-      </div>
-    );
-  }
-
-  if (!searchResults?.length) {
-    if (stale) return null;
-    return (
-      <div className="flex flex-col border-t border-gray-200 p-6">
-        <p className="text-2xl font-medium text-gray-900">{emptySearchTitle}</p>
-        <p className="text-gray-500">{emptySearchSubtitle}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className={clsx(
-      'flex flex-col border-t border-gray-200 md:flex-row',
-      stale && 'opacity-50'
-    )}>
-      {searchResults.map((result, index) => (
-        <div key={index} className="p-4">
-          <h3 className="mb-4 text-sm font-semibold uppercase">
-            {result.title}
-          </h3>
-          {result.type === 'products' ? (
-            <div className="grid grid-cols-2 gap-4">
-              {result.products?.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  imageSizes="(min-width: 1024px) 25vw, 50vw"
-                />
-              ))}
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {result.links?.map((link, i) => (
-                <li key={i}>
-                  <Link
-                    href={link.href}
-                    className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Main Navigation Component
-export const Navigation = forwardRef(function Navigation<S extends SearchResult>(
-  props: Props<S>,
-  ref: Ref<HTMLDivElement>
-) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const handleLinkSelect = useCallback((href: string) => {
-    router.push(href);
-  }, [router]);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsSearchOpen(false);
-  }, [pathname]);
-
-  return (
-    <div>
-      {/* Promo Banner */}
-      <div className="w-full bg-gradient-to-r from-gray-900 to-black">
-        <div className="mx-auto flex max-w-7xl">
-          <div className="flex w-1/2 items-center justify-center py-2 px-4">
-            <div className="flex items-center space-x-2">
-              <svg 
-                className="h-6 w-6 text-red-600" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 3.5a6.5 6.5 0 00-6.5 6.5c0 3.588 2.912 6.5 6.5 6.5s6.5-2.912 6.5-6.5S13.588 3.5 10 3.5zm0 11a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/>
-              </svg>
-              <span className="text-sm font-medium text-white">
-                Free hat with orders over $750
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex w-1/2 items-center justify-center border-l border-gray-700 py-2 px-4">
-            <div className="flex items-center space-x-2">
-              <svg 
-                className="h-6 w-6 text-red-600" 
-                fill="currentColor" 
-                viewBox="0 0 20 20"
-              >
-                <path d="M5.5 7a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5zm5 0a.5.5 0 00-.5.5v5a.5.5 0 001 0v-5a.5.5 0 00-.5-.5z"/>
-              </svg>
-              <span className="text-sm font-medium text-white">
-                Order by midnight & receive your order in 3-10 business days!
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Navigation */}
-      <div 
-        className={clsx(
-          'relative w-full bg-black',
-          props.isFloating && 'shadow-lg',
-          props.className
-        )}
-        ref={ref}
-      >
-        <div className="mx-auto max-w-[85rm]xl sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Left section with Logo and Shop Now dropdown */}
-            <div className="flex items-center gap-8">
-              {/* Logo */}
-              <div className="flex items-center">
-                <Logo
-                  className={clsx(props.mobileLogo != null ? 'hidden md:flex' : 'flex')}
-                  height={props.logoHeight}
-                  href={props.logoHref}
-                  label={props.logoLabel}
-                  logo={props.logo}
-                  width={props.logoWidth}
-                />
-                {props.mobileLogo != null && (
-                  <Logo
-                    className="flex md:hidden"
-                    height={props.mobileLogoHeight}
-                    href={props.logoHref}
-                    label={props.logoLabel}
-                    logo={props.mobileLogo}
-                    width={props.mobileLogoWidth}
-                  />
-                )}
-              </div>
-
-              {/* Shop Now Dropdown - Hidden on mobile */}
-              <div className="hidden md:block">
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600">
-                    Shop Now
-                    <ChevronDown size={16} />
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.Content 
-                      className="relative z-50 min-w-[250px] rounded-lg bg-white p-2 shadow-xl" 
-                      sideOffset={5}
-                    >
-                      <Stream value={props.links}>
-                        {(links) => (
-                          <div className="grid grid-cols-1 gap-1">
-                            {Array.isArray(links) && links.map((item, index) => (
-                              <CategoryMenuItem 
-                                key={index} 
-                                item={item} 
-                                onSelect={handleLinkSelect}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </Stream>
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Root>
-              </div>
-
-              {/* Static Menu Items */}
-              <div className="hidden md:flex space-x-8">
-                {STATIC_MENU_ITEMS.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href}
-                    className="text-white hover:text-gray-200 text-sm font-medium"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Right section - Icons */}
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                <Popover.Trigger asChild>
-                  <button 
-                    className="p-2 text-white hover:text-gray-200"
-                    aria-label={props.openSearchPopupLabel}
-                  >
-                    <Search size={20} />
-                  </button>
-                </Popover.Trigger>
-                <Popover.Portal>
-                  <Popover.Content 
-                    className="z-50 w-screen max-w-xl rounded-lg bg-white shadow-xl"
-                    sideOffset={5}
-                  >
-                    {props.searchAction && (
-                      <SearchForm
-                        searchAction={props.searchAction}         
-                        searchCtaLabel={props.searchCtaLabel}
-                        searchHref={props.searchHref}
-                        searchInputPlaceholder={props.searchInputPlaceholder}
-                        searchParamName={props.searchParamName}
-                      />
-                    )}
-                  </Popover.Content>
-                </Popover.Portal>
-              </Popover.Root>
-
-              {/* Account */}
-              <Link 
-                href={props.accountHref}
-                className="p-2 text-white hover:text-gray-200"
-                aria-label={props.accountLabel}
-              >
-                <User size={20} />
-              </Link>
-
-              {/* Cart */}
-              <Link 
-                href={props.cartHref}
-                className="p-2 text-white hover:text-gray-200 relative"
-                aria-label={props.cartLabel}
-              >
-                <ShoppingBag size={20} />
-                <Stream value={props.cartCount}>
-                  {(count) =>
-                    count != null && count > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                        {count}
-                      </span>
-                    )
-                  }
-                </Stream>
-              </Link>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200"
-                aria-expanded={isMobileMenuOpen}
-                aria-label={props.mobileMenuTriggerLabel}
-              >
-                <div className="space-y-1.5">
-                  <span className={clsx(
-                    'block h-0.5 w-6 bg-current transform transition duration-200',
-                    isMobileMenuOpen && 'rotate-45 translate-y-2'
-                  )} />
-                  <span className={clsx(
-                    'block h-0.5 w-6 bg-current transition duration-200',
-                    isMobileMenuOpen && 'opacity-0'
-                  )} />
-                  <span className={clsx(
-                    'block h-0.5 w-6 bg-current transform transition duration-200',
-                    isMobileMenuOpen && '-rotate-45 -translate-y-2'
-                  )} />
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="absolute inset-x-0 top-full bg-white shadow-lg md:hidden z-50">
-            <div className="divide-y divide-gray-200">
-              {/* Static Menu Items */}
-              <div className="px-2 py-3">
-                {STATIC_MENU_ITEMS.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Categories */}
-              <Stream value={props.links}>
-                {(links) => (
-                  <div className="py-3">
-                    {Array.isArray(links) && links.map((item, index) => (
-                      <MobileMenuItem key={index} item={item} />
-                    ))}
-                  </div>
-                )}
-              </Stream>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-});
-
-Navigation.displayName = 'Navigation';
 
 export type { Link, Props as NavigationProps, SearchResult };
 export default Navigation;
