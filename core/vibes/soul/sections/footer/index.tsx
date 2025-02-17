@@ -14,13 +14,13 @@ export const Footer = forwardRef(function Footer(
 ) {
   // Only Quick Links and Categories sections
   const quickLinks = [
-    { href: '#', label: 'About Us' },
-    { href: '#', label: 'Customer Gallery' },
-    { href: '#', label: 'Safe Shopping' },
-    { href: '#', label: 'Videos' },
-    { href: '#', label: 'Blog' },
-    { href: '#', label: 'Shipping & Returns' },
-    { href: '#', label: 'Contact Us' }
+    { href: '/about', label: 'About Us' },
+    { href: '/customer-gallery', label: 'Customer Gallery' },
+    { href: '/safe-shopping', label: 'Safe Shopping' },
+    { href: '/videos', label: 'Videos' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/shipping-returns', label: 'Shipping & Returns' },
+    { href: '/contact', label: 'Contact Us' }
   ];
 
   return (
