@@ -4,9 +4,12 @@ import { Breadcrumb, Breadcrumbs } from '@/vibes/soul/primitives/breadcrumbs';
 import { Price, PriceLabel } from '@/vibes/soul/primitives/price-label';
 import { Rating } from '@/vibes/soul/primitives/rating';
 import { ProductGallery } from '@/vibes/soul/sections/product-detail/product-gallery';
-
-import { ProductDetailForm, ProductDetailFormAction } from './product-detail-form';
 import { Field } from './schema';
+import { ProductDetailForm, ProductDetailFormAction } from './product-detail-form';
+
+import React from 'react';
+
+import TrustSpotWidget from './TrustSpotGallery';
 
 interface ProductDetailProduct {
   id: string;
@@ -19,12 +22,7 @@ interface ProductDetailProduct {
   rating?: Streamable<number | null>;
   summary?: Streamable<string>;
   description?: Streamable<string | React.ReactNode | null>;
-  accordions?: Streamable<
-    Array<{
-      title: string;
-      content: React.ReactNode;
-    }>
-  >;
+  accordions?: Streamable<Array<{ title: string; content: React.ReactNode }>>;
 }
 
 interface Props<F extends Field> {
@@ -55,10 +53,10 @@ export function ProductDetail<F extends Field>({
   prefetch,
   thumbnailLabel,
   additionalInformationLabel = 'Additional information',
-}: Props<F>) {
+}: Props<F>): JSX.Element {
   return (
-    <section className="@container">
-      <div className="mx-auto w-full max-w-screen-2xl px-4 py-10 @xl:px-6 @xl:py-14 @4xl:px-8 @4xl:py-20">
+    <div className="@container">
+      <div className="mx-auto w-full max-w-screen-2xl px-4 py-10 xl:px-6 xl:py-14 4xl:px-8 4xl:py-20">
         {breadcrumbs && <Breadcrumbs breadcrumbs={breadcrumbs} className="mb-6" />}
 
         <Stream fallback={<ProductDetailSkeleton />} value={streamableProduct}>
@@ -71,7 +69,6 @@ export function ProductDetail<F extends Field>({
                   </Stream>
                 </div>
 
-                {/* Product Details */}
                 <div className="text-foreground">
                   {product.subtitle != null && product.subtitle !== '' && (
                     <p className="font-mono text-sm uppercase">{product.subtitle}</p>
@@ -81,9 +78,18 @@ export function ProductDetail<F extends Field>({
                     {product.title}
                   </h1>
 
-                  <Stream fallback={<RatingSkeleton />} value={product.rating}>
-                    {(rating) => <Rating rating={rating ?? 0} />}
-                  </Stream>
+                  {/* Add TrustSpot inline rating here */}
+                  <div className="mb-3">
+                    <TrustSpotWidget
+                      productId={product.id}
+                      productName={product.title}
+                      productUrl={product.href}
+                      displayMode="simple" 
+                      hideDetails={true}  
+                    />
+                  </div>
+
+                 
 
                   <Stream fallback={<PriceLabelSkeleton />} value={product.price}>
                     {(price) => (
@@ -139,6 +145,13 @@ export function ProductDetail<F extends Field>({
                     }
                   </Stream>
 
+                  <div className="border-t border-contrast-100 py-8">
+                    <TrustSpotWidget
+                      productId={product.id}
+                      productName={product.title}
+                    />
+                  </div>
+
                   <h2 className="sr-only">{additionalInformationLabel}</h2>
                   <Stream fallback={<ProductAccordionsSkeleton />} value={product.accordions}>
                     {(accordions) =>
@@ -159,7 +172,8 @@ export function ProductDetail<F extends Field>({
           }
         </Stream>
       </div>
-    </section>
+    </div>
+
   );
 }
 
@@ -182,7 +196,7 @@ function ThumbnailsSkeleton() {
 
 function ProductGallerySkeleton() {
   return (
-    <div className="@container">
+    <div className="container">
       <div className="w-full overflow-hidden rounded-xl @xl:rounded-2xl">
         <div className="flex">
           <ImageSkeleton />
