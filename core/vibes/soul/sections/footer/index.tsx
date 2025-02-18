@@ -98,7 +98,7 @@ export const Footer = forwardRef(function Footer(
                 <Link href="https://www.youtube.com/channel/UCbkSOBsMU4wF9B47pYrO7Wg" className="text-red-600 hover:text-red-800">
                   <Youtube size={24} />
                 </Link>
-                <Link href="https://www.youtube.com/channel/UCbkSOBsMU4wF9B47pYrO7Wg" className="text-blue-400 hover:text-blue-600">
+                <Link href="https://x.com/i/flow/login?redirect_after_login=%2FCutsmetal" className="text-blue-400 hover:text-blue-600">
                   <Twitter size={24} />
                 </Link>
                 <Link href="https://www.pinterest.com/cuts_metal/" className="text-red-600 hover:text-red-800">
