@@ -124,6 +124,8 @@ declare module '@bigcommerce/bodl-events' {
   }
 
   declare class ProductEmitter extends EventEmitter {
+    title: string;
+    id: string;
     pageViewed(callback: BodlEventCallback): this;
     categoryViewed(callback: BodlEventCallback): this;
     searchPerformed(callback: BodlEventCallback): this;

@@ -1,3 +1,4 @@
+"use client";
 import { clsx } from 'clsx';
 
 import { Badge } from '@/vibes/soul/primitives/badge';
@@ -6,6 +7,7 @@ import { Image } from '~/components/image';
 import { Link } from '~/components/link';
 
 import { Compare } from './compare';
+import { useState } from 'react';
 
 export interface CardProduct {
   id: string;
@@ -59,6 +61,8 @@ export function ProductCard({
   imagePriority = false,
   imageSizes = '(min-width: 80rem) 20vw, (min-width: 64rem) 25vw, (min-width: 42rem) 33vw, (min-width: 24rem) 50vw, 100vw',
 }: Props) {
+  const [storeId,setStoreId]=useState([])
+
   return (
     <div className={clsx('@container', className)}>
       <Link
@@ -159,6 +163,7 @@ export function ProductCard({
             />
           </div>
         )}
+       
       </div>
     </div>
   );
