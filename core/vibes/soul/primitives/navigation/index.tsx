@@ -84,6 +84,7 @@ type SearchAction<S extends SearchResult> = Action<
   FormData
 >;
 
+
 interface Props<S extends SearchResult> {
   className?: string;
   isFloating?: boolean;
