@@ -450,7 +450,7 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
       {/* Main Navigation */}
       <div 
         className={clsx(
-          'relative w-full bg-black',
+          'sticky w-full bg-black',
           isFloating && 'shadow-lg',
           className
         )}
