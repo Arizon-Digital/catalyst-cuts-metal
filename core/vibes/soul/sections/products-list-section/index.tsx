@@ -92,7 +92,7 @@ export function ProductsListSection({
                     <span className="inline-flex h-[1lh] w-[2ch] animate-pulse rounded-lg bg-contrast-100" />
                   }
                 >
-                  <span className="text-contrast-300">{totalCount}</span>
+                  <span className="text-contrast-300">({totalCount} Items)</span>
                 </Suspense>
               </h1>
               <div className="flex gap-2">
@@ -174,6 +174,7 @@ export function ProductsListSection({
           </aside>
 
           <div className="flex-1 group-has-[[data-pending]]/products-list-section:animate-pulse">
+         
             <ProductsList
               compareAction={compareAction}
               compareLabel={compareLabel}
