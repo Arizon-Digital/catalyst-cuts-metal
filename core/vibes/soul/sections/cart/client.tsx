@@ -171,7 +171,7 @@ export function CartClient<LineItem extends CartLineItem>({
         <h1 className="mb-10 font-heading text-4xl font-medium leading-none @xl:text-5xl">
           {title}
           <span className="ml-4 text-contrast-300 contrast-more:text-contrast-500">
-            {optimisticQuantity}
+            ({optimisticQuantity} Items)
           </span>
         </h1>
 
