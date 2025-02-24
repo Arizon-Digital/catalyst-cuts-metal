@@ -1,7 +1,5 @@
 
 
-
-
 'use client';
 
 import { Checkbox } from '@radix-ui/react-checkbox';
@@ -16,14 +14,12 @@ interface Image {
   src?: string;
 }
 
-interface ProductInfo {
-  id: string;
-  image?: Image;
-  name: string;
-}
-
 interface Props {
   productId: string | string[];
+  productName?: string;  
+  sku?: string;
+  shortCode?: string;
+  image?: Image;
   colorScheme?: 'light' | 'dark';
   paramName?: string;
   label?: string;
@@ -31,6 +27,10 @@ interface Props {
 
 export const Compare = ({
   productId,
+  productName,
+  sku,
+  shortCode,
+  image,
   colorScheme = 'light',
   paramName = 'compare',
   label,
@@ -41,6 +41,22 @@ export const Compare = ({
   
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { products, setProducts } = useCompareDrawerContext();
+  
+  // Get product name from URL if not provided
+  const getDefaultProductName = () => {
+    if (typeof window !== 'undefined') {
+      const pathSegments = window.location.pathname.split('/');
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      return lastSegment
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    return '';
+  };
+
+  // Use provided product name or get from URL
+  const resolvedProductName = productName || getDefaultProductName();
   
   useEffect(() => {
     if (Array.isArray(productId)) {
@@ -71,7 +87,13 @@ export const Compare = ({
         const newProducts = [...products];
         productId.forEach(id => {
           if (!products.some(p => p.id === id)) {
-            const productDetails = { id, name: id, image: undefined };
+            const productDetails = {
+              id: id,
+              name: resolvedProductName,
+              sku: sku,
+              shortCode: shortCode,
+              image: image
+            };
             newProducts.push(productDetails);
           }
         });
@@ -79,7 +101,6 @@ export const Compare = ({
       } else {
         const newIds = selectedIds.filter(id => !productId.includes(id));
         setSelectedIds(newIds);
-        
         setProducts(products.filter(p => !productId.includes(p.id)));
       }
     } else {
@@ -88,14 +109,16 @@ export const Compare = ({
         
         const productToAdd = {
           id: productId,
-          name: productId, 
-          image: undefined,
+          name: resolvedProductName,
+          sku: sku,
+          shortCode: shortCode,
+          image: image
         };
         
-        setProducts([...products, productToAdd]);
+        setProducts(prev => [...prev, productToAdd]);
       } else {
         setSelectedIds(prev => prev.filter(id => id !== productId));
-        setProducts(products.filter(p => p.id !== productId));
+        setProducts(prev => prev.filter(p => p.id !== productId));
       }
     }
   };
@@ -110,7 +133,10 @@ export const Compare = ({
         onCheckedChange={handleOnCheckedChange}
       >
         {isChecked() && (
-          <Check className="h-3 w-3 text-blue-600" />
+          <Check 
+            className="h-3 w-3 text-blue-600"
+            strokeWidth={2}
+          />
         )}
       </Checkbox>
       <Label className="font-normal" htmlFor={checkboxId}>

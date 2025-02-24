@@ -154,15 +154,20 @@ export function ProductCard({
         </div>
 
         {showCompare && (
-          <div className="mt-0.5 shrink-0">
-            <Compare
-              colorScheme={colorScheme}
-              label={compareLabel}
-              paramName={compareParamName}
-              productId={id}
-            />
-          </div>
-        )}
+  <div className="mt-0.5 shrink-0">
+    <Compare
+      colorScheme={colorScheme}
+      label={compareLabel}
+      paramName={compareParamName}
+      productId={id}
+      productName={title}  
+      image={image ? { 
+        altText: image.alt, 
+        src: image.src 
+      } : undefined}
+    />
+  </div>
+)}
        
       </div>
     </div>

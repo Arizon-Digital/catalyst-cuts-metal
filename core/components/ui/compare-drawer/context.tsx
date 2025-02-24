@@ -8,6 +8,8 @@ interface Image {
 }
 
 interface Product {
+  sku: any;
+  shortCode: any;
   id: string;
   name: string;
   image?: Image;
