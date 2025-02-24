@@ -457,13 +457,13 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
         ref={ref}
       >
         <div className="mx-auto max-w-[85rem] sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start justify-between">
             {/* Left section with Logo and Shop Now dropdown */}
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-8 self-center">
               {/* Logo */}
               <div className="flex items-center">
                 <Logo
-                  className={clsx(streamableMobileLogo != null ? 'hidden md:flex' : 'flex')}
+                  className={clsx(streamableMobileLogo != null ? 'hidden md:flex' : 'flex ')}
                   height={logoHeight}
                   href={logoHref}
                   label={logoLabel}
@@ -530,8 +530,9 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
             </div>
 
             {/* Right section - Icons */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between gap-1 w-full px-3">
               {/* Search */}
+              <div className='flex flex-row items-center gap-[5px]'>
               <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                 <Popover.Trigger asChild>
                   <button 
@@ -585,29 +586,32 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
                   }
                 </Stream>
               </Link>
+              </div>
+              <div>
 
-              {/* Mobile Menu Button */}
-              <button
+             {/* Mobile Menu Button */}
+             <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200"
+                className="relative z-[10000] inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200 bg-transparent"
                 aria-expanded={isMobileMenuOpen}
                 aria-label={mobileMenuTriggerLabel}
               >
-                <div className="space-y-1.5">
+                <div className="relative space-y-1.5">
                   <span className={clsx(
-                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    'block h-0.5 w-6 bg-white transform transition duration-200',
                     isMobileMenuOpen && 'rotate-45 translate-y-2'
                   )} />
                   <span className={clsx(
-                    'block h-0.5 w-6 bg-current transition duration-200',
+                    'block h-0.5 w-6 bg-white transition duration-200',
                     isMobileMenuOpen && 'opacity-0'
                   )} />
                   <span className={clsx(
-                    'block h-0.5 w-6 bg-current transform transition duration-200',
+                    'block h-0.5 w-6 bg-white transform transition duration-200',
                     isMobileMenuOpen && '-rotate-45 -translate-y-2'
                   )} />
                 </div>
               </button>
+              </div>
             </div>
           </div>
         </div>
