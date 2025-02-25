@@ -358,7 +358,7 @@ const MobileMenuItem = ({ item }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   return (
-    <div className="border-b border-gray-200 last:border-0">
+    <div className=" last:border-0">
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex-1">
           {item.href ? (
