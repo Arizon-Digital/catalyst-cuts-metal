@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { ButtonLink } from '@/vibes/soul/primitives/button-link';
 import { SignInSection } from '@/vibes/soul/sections/sign-in-section';
+import { ForceRefresh } from '~/components/force-refresh';
 
 import { login } from './_actions/login';
 
@@ -18,6 +19,8 @@ export default async function Login() {
   const t = await getTranslations('Login');
 
   return (
+  <>
+  	<ForceRefresh />
     <SignInSection
       action={login}
       forgotPasswordHref="/login/forgot-password"
@@ -40,5 +43,6 @@ export default async function Login() {
         </ButtonLink>
       </div>
     </SignInSection>
+</>
   );
 }
