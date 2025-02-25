@@ -457,9 +457,9 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
         ref={ref}
       >
         <div className="mx-auto max-w-[85rem] sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start justify-between">
+          <div className="flex flex-col sm:flex-row gap-1 sm:gap-0  h-[unset] sm:h-16 items-center justify-between">
             {/* Left section with Logo and Shop Now dropdown */}
-            <div className="flex items-center gap-8 self-center">
+            <div className="flex items-center gap-8">
               {/* Logo */}
               <div className="flex items-center">
                 <Logo
@@ -530,9 +530,8 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
             </div>
 
             {/* Right section - Icons */}
-            <div className="flex items-center justify-between gap-1 w-full px-3">
+            <div className="flex items-center space-x-4 w-full sm:w-[unset] ">
               {/* Search */}
-              <div className='flex flex-row items-center gap-[5px]'>
               <Popover.Root open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                 <Popover.Trigger asChild>
                   <button 
@@ -586,13 +585,11 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
                   }
                 </Stream>
               </Link>
-              </div>
-              <div>
 
              {/* Mobile Menu Button */}
              <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="relative z-[10000] inline-flex md:hidden items-center justify-center p-2 rounded-md text-white hover:text-gray-200 bg-transparent"
+                className="sm:relative z-[10000] absolute right-[10px] sm:right-[unset]  inline-flex md:hidden items-center justify-end xl:justify-center p-2 rounded-md text-white hover:text-gray-200 bg-transparent"
                 aria-expanded={isMobileMenuOpen}
                 aria-label={mobileMenuTriggerLabel}
               >
@@ -611,7 +608,6 @@ export const Navigation = forwardRef(function Navigation<S extends SearchResult>
                   )} />
                 </div>
               </button>
-              </div>
             </div>
           </div>
         </div>
