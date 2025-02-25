@@ -6,6 +6,7 @@ import { getCartId } from '~/lib/cart';
 import { exists } from '~/lib/utils';
 
 import { redirectToCheckout } from './_actions/redirect-to-checkout';
+import { updateCouponCode } from './_actions/update-coupon-code';
 import { updateLineItem } from './_actions/update-line-item';
 import { CartViewed } from './_components/cart-viewed';
 import { getCart } from './page-data';
@@ -87,6 +88,14 @@ export default async function Cart() {
     variantEntityId: item.variantEntityId,
   }));
 
+  const discounts = cart.discounts.map((discount) => ({
+    value: `-${format.number(discount.discountedAmount.value, {
+      style: 'currency',
+      currency: cart.currencyCode,
+    })}`,
+    label: t('CheckoutSummary.discounts'),
+  }));
+
   return (
     <>
       <CartComponent
@@ -96,7 +105,7 @@ export default async function Cart() {
             style: 'currency',
             currency: cart.currencyCode,
           }),
-          totalLabel: t('CheckoutSummary.grandTotal'),
+          totalLabel: t('CheckoutSummary.total'),
           summaryItems: [
             {
               label: t('CheckoutSummary.subTotal'),
@@ -105,8 +114,9 @@ export default async function Cart() {
                 currency: cart.currencyCode,
               }),
             },
+            ...discounts,
             checkout?.taxTotal && {
-              label: 'Tax',
+              label: t('CheckoutSummary.tax'),
               value: format.number(checkout.taxTotal.value, {
                 style: 'currency',
                 currency: cart.currencyCode,
@@ -116,6 +126,13 @@ export default async function Cart() {
         }}
         checkoutAction={redirectToCheckout}
         checkoutLabel={t('proceedToCheckout')}
+        couponCode={{
+          action: updateCouponCode,
+          couponCodes: checkout?.coupons.map((coupon) => coupon.code) ?? [],
+          ctaLabel: t('CheckoutSummary.CouponCode.apply'),
+          label: t('CheckoutSummary.CouponCode.couponCode'),
+          removeLabel: t('CheckoutSummary.CouponCode.removeCouponCode'),
+        }}
         decrementLineItemLabel={t('decrement')}
         deleteLineItemLabel={t('removeItem')}
         emptyState={{
