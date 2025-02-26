@@ -76,7 +76,7 @@ export function Card({
           <Image
             alt={image.alt}
             className={clsx(
-              'w-full scale-100 select-none transition-transform duration-500 ease-out group-hover:scale-110',
+              'w-full scale-100 select-none object-cover transition-transform duration-500 ease-out group-hover:scale-110',
               {
                 light: 'bg-[var(--card-light-background,hsl(var(--contrast-100)))]',
                 dark: 'bg-[var(--card-dark-background,hsl(var(--contrast-500)))]',

@@ -6,7 +6,6 @@ import { startTransition } from 'react';
 
 import { Button } from '@/vibes/soul/primitives/button';
 import { Drawer } from '@/vibes/soul/primitives/drawer';
-
 import { Image } from '~/components/image';
 import { Link } from '~/components/link';
 

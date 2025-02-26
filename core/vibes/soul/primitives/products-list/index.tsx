@@ -14,7 +14,6 @@ export type ListProduct = CardProduct;
 interface Props {
   products: Streamable<ListProduct[]>;
   compareProducts?: Streamable<ListProduct[] | null>;
-  description?: Streamable<string | null>;
   className?: string;
   colorScheme?: 'light' | 'dark';
   aspectRatio?: '5:6' | '3:4' | '1:1';
@@ -32,7 +31,6 @@ export function ProductsList({
   className,
   colorScheme,
   aspectRatio,
-  description, 
   showCompare,
   compareAction,
   compareProducts: streamableCompareProducts,

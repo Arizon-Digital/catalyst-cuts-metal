@@ -1,5 +1,3 @@
-
-
 import { clsx } from 'clsx';
 import { Loader2 } from 'lucide-react';
 
@@ -19,10 +17,24 @@ export type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
  *
  * ```css
  * :root {
- *   --button-primary-background: #FF0000;
- *   --button-primary-background-hover: #FF3333;
- *   --button-primary-foreground: white;
- *   // Other variables remain the same
+ *   --button-focus: hsl(var(--primary));
+ *   --button-font-family: var(--font-family-body);
+ *   --button-primary-background: hsl(var(--primary));
+ *   --button-primary-background-hover: color-mix(in oklab, hsl(var(--primary)), white 75%);
+ *   --button-primary-foreground: hsl(var(--foreground));
+ *   --button-primary-border: hsl(var(--primary));
+ *   --button-secondary-background: hsl(var(--foreground));
+ *   --button-secondary-background-hover: hsl(var(--background));
+ *   --button-secondary-foreground: hsl(var(--background));
+ *   --button-secondary-border: hsl(var(--foreground));
+ *   --button-tertiary-background: hsl(var(--background));
+ *   --button-tertiary-background-hover: hsl(var(--contrast-100));
+ *   --button-tertiary-foreground: hsl(var(--foreground));
+ *   --button-tertiary-border: hsl(var(--contrast-200));
+ *   --button-ghost-background: transparent;
+ *   --button-ghost-background-hover: hsl(var(--foreground) / 5%);
+ *   --button-ghost-foreground: hsl(var(--foreground));
+ *   --button-ghost-border: transparent;
  * }
  * ```
  */
@@ -42,16 +54,16 @@ export function Button({
     <button
       aria-busy={loading}
       className={clsx(
-        'relative z-0 inline-flex h-fit select-none items-center justify-center overflow-hidden border text-center font-[family-name:var(--button-font-family,var(--font-family-body))] font-semibold leading-normal after:absolute after:inset-0 after:-z-10 after:-translate-x-[105%] after:transition-[opacity,transform] after:duration-300 after:[animation-timing-function:cubic-bezier(0,0.25,0,1)] hover:after:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2',
+        'relative z-0 inline-flex h-fit select-none items-center justify-center overflow-hidden border text-center font-[family-name:var(--button-font-family,var(--font-family-body))] font-semibold leading-normal after:absolute after:inset-0 after:-z-10 after:-translate-x-[105%] after:transition-[opacity,transform] after:duration-300 after:[animation-timing-function:cubic-bezier(0,0.25,0,1)] hover:after:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--button-focus,hsl(var(--primary)))] focus-visible:ring-offset-2',
         {
           primary:
-            'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
+            'border-[var(--button-primary-border,hsl(var(--primary)))] bg-[var(--button-primary-background,hsl(var(--primary)))] text-[var(--button-primary-foreground)] after:bg-[var(--button-primary-background-hover,color-mix(in_oklab,hsl(var(--primary)),white_75%))]',
           secondary:
-          'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
+            'border-[var(--button-secondary-border,hsl(var(--foreground)))] bg-[var(--button-secondary-background,hsl(var(--foreground)))] text-[var(--button-secondary-foreground,hsl(var(--background)))] after:bg-[var(--button-secondary-background-hover,hsl(var(--background)))]',
           tertiary:
-           'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
+            'border-[var(--button-tertiary-border,hsl(var(--contrast-200)))] bg-[var(--button-tertiary-background,hsl(var(--background)))] text-[var(--button-tertiary-foreground,hsl(var(--foreground)))] after:bg-[var(--button-tertiary-background-hover,hsl(var(--contrast-100)))]',
           ghost:
-           'border-[#cc3333] bg-[#cc3333] text-white hover:bg-[#cc3333]',
+            'border-[var(--button-ghost-border,transparent)] bg-[var(--button-ghost-background,transparent)] text-[var(--button-ghost-foreground,hsl(var(--foreground)))] after:bg-[var(--button-ghost-background-hover,hsl(var(--foreground)/5%))]',
         }[variant],
         {
           pill: 'rounded-full after:rounded-full',
@@ -86,7 +98,7 @@ export function Button({
               medium: 'gap-x-2.5 px-5 py-3',
               large: 'gap-x-3 px-6 py-4',
             }[size],
-          variant === 'secondary' && '',
+          variant === 'secondary' && 'mix-blend-difference',
         )}
       >
         {children}
