@@ -153,7 +153,7 @@ export function CartClient<LineItem extends CartLineItem>({
             </div>
 
             <div className="flex justify-between border-t border-contrast-100 py-6 text-xl font-bold">
-              <dt>{cart.totalLabel ?? 'Total'}</dt>
+              <dt>{ 'Total Amount'}</dt>
               <dl>{cart.total}</dl>
             </div>
           </dl>
