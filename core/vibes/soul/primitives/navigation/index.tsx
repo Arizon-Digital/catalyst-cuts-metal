@@ -1,3 +1,4 @@
+
 'use client';
 
 import { SubmissionResult, useForm } from '@conform-to/react';
@@ -15,6 +16,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -72,13 +74,48 @@ export const Navigation = forwardRef(function Navigation(
 ) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
   const pathname = usePathname();
+  const shopMenuRef = useRef(null);
+  const submenuRef = useRef(null);
 
   // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+    setIsShopMenuOpen(false);
+    setActiveSubmenu(null);
   }, [pathname]);
+
+  // Handle click outside for shop menu
+  useEffect(() => {
+    if (!isShopMenuOpen) return;
+    
+    const handleClickOutside = (event) => {
+      const isClickOutsideMainMenu = shopMenuRef.current && !shopMenuRef.current.contains(event.target);
+      const isClickOutsideSubmenu = submenuRef.current && !submenuRef.current.contains(event.target);
+      
+      if (isClickOutsideMainMenu && isClickOutsideSubmenu) {
+        setIsShopMenuOpen(false);
+        setActiveSubmenu(null);
+      }
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isShopMenuOpen]);
+
+  // Function to handle showing submenu
+  const handleSubmenuToggle = (itemIndex) => {
+    if (activeSubmenu === itemIndex) {
+      setActiveSubmenu(null);
+    } else {
+      setActiveSubmenu(itemIndex);
+    }
+  };
 
   return (
     <div>
@@ -180,35 +217,92 @@ export const Navigation = forwardRef(function Navigation(
               </div>
 
               {/* Shop Now Dropdown - Hidden on mobile and iPad */}
-              <div className="hidden lg:block">
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600">
-                    Shop Now
-                    <ChevronDown size={16} />
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.Content 
-                      className="relative z-50 min-w-[250px] rounded-lg bg-white p-2 shadow-xl" 
-                      sideOffset={5}
-                    >
-                      <Stream value={streamableLinks}>
-                        {(links) => (
-                          <div className="grid grid-cols-1 gap-1">
-                            {Array.isArray(links) && links.map((item, index) => (
-                              <CategoryMenuItem 
-                                key={index} 
-                                item={item} 
-                                onSelect={(href) => {
-                                  window.location.href = href;
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </Stream>
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Root>
+              <div className="hidden lg:block relative" ref={shopMenuRef}>
+                <button 
+                  onClick={() => setIsShopMenuOpen(!isShopMenuOpen)}
+                  className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                >
+                  Shop Now
+                  <ChevronDown size={16} />
+                </button>
+                
+                {isShopMenuOpen && (
+                  <div className="absolute top-full left-0 mt-1 z-40 min-w-[250px] bg-white shadow-xl rounded-lg p-2">
+                    <Stream value={streamableLinks}>
+                      {(links) => (
+                        <div className="grid grid-cols-1 gap-1">
+                          {Array.isArray(links) && links.map((item, index) => (
+                            <div 
+                              key={index} 
+                              className="relative"
+                            >
+                              <div 
+                                className={clsx(
+                                  "flex w-full items-center justify-between rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 cursor-pointer",
+                                  activeSubmenu === index && "bg-gray-100"
+                                )}
+                                onClick={() => handleSubmenuToggle(index)}
+                                onMouseEnter={() => item.groups && item.groups.length > 0 && handleSubmenuToggle(index)}
+                              >
+                                {item.href ? (
+                                  <Link href={item.href} className="flex-1">
+                                    {item.label}
+                                  </Link>
+                                ) : (
+                                  <span>{item.label}</span>
+                                )}
+                                {item.groups && item.groups.length > 0 && (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                              </div>
+                              
+                              {activeSubmenu === index && item.groups && item.groups.length > 0 && (
+                                <div 
+                                  ref={submenuRef}
+                                  className="absolute z-50 bg-white shadow-xl rounded-lg p-2"
+                                  style={{ 
+                                    top: '0',
+                                    left: '100%',
+                                    border: '1px solid #e5e7eb',
+                                    minWidth: '350px',
+                                    maxHeight: 'none',
+                                    marginLeft: '1px'
+                                  }}
+                                >
+                                  {item.groups.map((group, groupIndex) => (
+                                    <div key={groupIndex} className="py-1">
+                                      {group.label && (
+                                        <div className="px-3 py-2 text-sm font-semibold text-gray-600 border-b border-gray-100 mb-2">
+                                          {group.href ? (
+                                            <Link href={group.href} className="hover:text-gray-900">
+                                              {group.label}
+                                            </Link>
+                                          ) : (
+                                            group.label
+                                          )}
+                                        </div>
+                                      )}
+                                      {group.links?.map((link, linkIndex) => (
+                                        <div
+                                          key={linkIndex}
+                                          className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                          <Link href={link.href} className="block w-full">
+                                            {link.label}
+                                          </Link>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Stream>
+                  </div>
+                )}
               </div>
 
               {/* Static Menu Items - Only visible on large screens */}
@@ -426,79 +520,6 @@ const MobileMenuItem = ({ item }) => {
         </div>
       )}
     </div>
-  );
-};
-
-// Utility Component for Category Dropdown Item
-const CategoryMenuItem = ({ item, onSelect }) => {
-  if (item.groups && item.groups.length > 0) {
-    return (
-      <DropdownMenu.Sub>
-        <DropdownMenu.SubTrigger className="flex w-full items-center justify-between rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">
-          {item.href ? (
-            <Link href={item.href} className="flex-1">
-              {item.label}
-            </Link>
-          ) : (
-            <span>{item.label}</span>
-          )}
-          <ChevronRight className="h-4 w-4" />
-        </DropdownMenu.SubTrigger>
-        <DropdownMenu.Portal>
-          <div className="relative z-[100]">
-            <DropdownMenu.SubContent
-              className="min-w-[200px] rounded-md bg-white p-1 shadow-lg"
-              sideOffset={-5}
-              alignOffset={-4}
-            >
-              {item.groups.map((group, groupIndex) => (
-                <div key={groupIndex}>
-                  {group.label && (
-                    <div className="px-3 py-2 text-xs font-semibold uppercase text-gray-500">
-                      {group.href ? (
-                        <Link href={group.href} className="hover:text-gray-700">
-                          {group.label}
-                        </Link>
-                      ) : (
-                        group.label
-                      )}
-                    </div>
-                  )}
-                  {group.links?.map((link, linkIndex) => (
-                    <DropdownMenu.Item
-                      key={linkIndex}
-                      className="rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onSelect={(event) => {
-                        event.preventDefault();
-                        onSelect?.(link.href);
-                      }}
-                    >
-                      <Link href={link.href} className="block w-full">
-                        {link.label}
-                      </Link>
-                    </DropdownMenu.Item>
-                  ))}
-                </div>
-              ))}
-            </DropdownMenu.SubContent>
-          </div>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Sub>
-    );
-  }
-
-  return (
-    <DropdownMenu.Item 
-      className="rounded-md px-4 py-2 text-sm text-gray-900 hover:bg-gray-100"
-      onSelect={(event) => {
-        event.preventDefault();
-        onSelect?.(item.href);
-      }}
-    >
-      <Link href={item.href} className="block w-full">
-        {item.label}
-      </Link>
-    </DropdownMenu.Item>
   );
 };
 
