@@ -1,3 +1,4 @@
+
 'use client';
 
 import { getFormProps, getInputProps, SubmissionResult, useForm } from '@conform-to/react';
@@ -6,13 +7,13 @@ import { clsx } from 'clsx';
 import { ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
 import { startTransition, useActionState, useEffect, useOptimistic } from 'react';
 import { useFormStatus } from 'react-dom';
+import Link from 'next/link';
 
 import { Button } from '@/vibes/soul/primitives/button';
 import { toast } from '@/vibes/soul/primitives/toaster';
 import { StickySidebarLayout } from '@/vibes/soul/sections/sticky-sidebar-layout';
 import { Image } from '~/components/image';
 
-import { CouponCodeForm, CouponCodeFormState } from './coupon-code-form';
 import { cartLineItemActionFormDataSchema } from './schema';
 
 import { CartEmptyState } from '.';
@@ -26,6 +27,7 @@ export interface CartLineItem {
   subtitle: string;
   quantity: number;
   price: string;
+  href: string; // Added href property for product link
 }
 
 export interface CartSummaryItem {
@@ -45,16 +47,6 @@ export interface Cart<LineItem extends CartLineItem> {
   totalLabel?: string;
 }
 
-interface CouponCode {
-  action: Action<CouponCodeFormState, FormData>;
-  couponCodes?: string[];
-  ctaLabel?: string;
-  disabled?: boolean;
-  label?: string;
-  placeholder?: string;
-  removeLabel?: string;
-}
-
 export interface Props<LineItem extends CartLineItem> {
   title?: string;
   summaryTitle?: string;
@@ -66,19 +58,17 @@ export interface Props<LineItem extends CartLineItem> {
   decrementLineItemLabel?: string;
   incrementLineItemLabel?: string;
   cart: Cart<LineItem>;
-  couponCode?: CouponCode;
 }
 
 const defaultEmptyState = {
   title: 'Your cart is empty',
   subtitle: 'Add some products to get started.',
-  cta: { label: 'Continue shopping', href: '#' },
+  cta: { label: 'Continue shopping', href: '/' },
 };
 
 export function CartClient<LineItem extends CartLineItem>({
   title,
   cart,
-  couponCode,
   decrementLineItemLabel,
   incrementLineItemLabel,
   deleteLineItemLabel,
@@ -162,18 +152,6 @@ export function CartClient<LineItem extends CartLineItem>({
               ))}
             </div>
 
-            {couponCode && (
-              <CouponCodeForm
-                action={couponCode.action}
-                couponCodes={couponCode.couponCodes}
-                ctaLabel={couponCode.ctaLabel}
-                disabled={couponCode.disabled}
-                label={couponCode.label}
-                placeholder={couponCode.placeholder}
-                removeLabel={couponCode.removeLabel}
-              />
-            )}
-
             <div className="flex justify-between border-t border-contrast-100 py-6 text-xl font-bold">
               <dt>{cart.totalLabel ?? 'Total'}</dt>
               <dl>{cart.total}</dl>
@@ -193,7 +171,7 @@ export function CartClient<LineItem extends CartLineItem>({
         <h1 className="mb-10 font-heading text-4xl font-medium leading-none @xl:text-5xl">
           {title}
           <span className="ml-4 text-contrast-300 contrast-more:text-contrast-500">
-            {optimisticQuantity}
+            ({optimisticQuantity} Items)
           </span>
         </h1>
 
@@ -204,36 +182,42 @@ export function CartClient<LineItem extends CartLineItem>({
               className="flex flex-col items-start gap-x-5 gap-y-4 @container @sm:flex-row"
               key={lineItem.id}
             >
-              <div className="relative aspect-square w-full max-w-24 overflow-hidden rounded-xl bg-contrast-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
-                <Image
-                  alt={lineItem.image.alt}
-                  className="object-cover"
-                  fill
-                  sizes="(min-width: 28rem) 9rem, (min-width: 24rem) 6rem, 100vw"
-                  src={lineItem.image.src}
-                />
-              </div>
-              <div className="flex flex-grow flex-col flex-wrap justify-between gap-y-2 @xl:flex-row">
-                <div className="flex w-full flex-1 flex-col @xl:w-1/2 @xl:pr-4">
-                  <span className="font-medium">{lineItem.title}</span>
-                  <span className="text-contrast-300 contrast-more:text-contrast-500">
-                    {lineItem.subtitle}
-                  </span>
+              <Link 
+                href={lineItem.href || `/products/${lineItem.id}`} 
+                className="group flex flex-grow items-start gap-x-5 gap-y-4 @sm:flex-row"
+              >
+                <div className="relative aspect-square w-full max-w-24 overflow-hidden rounded-xl bg-contrast-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 group-hover:opacity-90 transition-opacity duration-300">
+                  <Image
+                    alt={lineItem.image.alt}
+                    className=""
+                    fill
+                    sizes="(min-width: 28rem) 9rem, (min-width: 24rem) 6rem, 100vw"
+                    src={lineItem.image.src}
+                  />
                 </div>
-                <CounterForm
-                  action={formAction}
-                  decrementLabel={decrementLineItemLabel}
-                  deleteLabel={deleteLineItemLabel}
-                  incrementLabel={incrementLineItemLabel}
-                  lineItem={lineItem}
-                  onSubmit={(formData) => {
-                    startTransition(() => {
-                      formAction(formData);
-                      setOptimisticLineItems(formData);
-                    });
-                  }}
-                />
-              </div>
+                <div className="flex flex-grow flex-col flex-wrap justify-between gap-y-2 @xl:flex-row">
+                  <div className="flex w-full flex-1 flex-col @xl:w-1/2 @xl:pr-4">
+                    <span className="font-medium group-hover:text-primary transition-colors duration-300">{lineItem.title}</span>
+                    <span className="text-contrast-300 contrast-more:text-contrast-500">
+                      {lineItem.subtitle}
+                    </span>
+                  </div>
+                  <span className="font-medium @xl:ml-auto">{lineItem.price}</span>
+                </div>
+              </Link>
+              <CounterForm
+                action={formAction}
+                decrementLabel={decrementLineItemLabel}
+                deleteLabel={deleteLineItemLabel}
+                incrementLabel={incrementLineItemLabel}
+                lineItem={lineItem}
+                onSubmit={(formData) => {
+                  startTransition(() => {
+                    formAction(formData);
+                    setOptimisticLineItems(formData);
+                  });
+                }}
+              />
             </li>
           ))}
         </ul>
@@ -272,11 +256,9 @@ function CounterForm({
   });
 
   return (
-    <form {...getFormProps(form)} action={action}>
+    <form {...getFormProps(form)} action={action} className="flex items-center">
       <input {...getInputProps(fields.id, { type: 'hidden' })} key={fields.id.id} />
-      <div className="flex w-full flex-wrap items-center gap-x-5 gap-y-2">
-        <span className="font-medium @xl:ml-auto">{lineItem.price}</span>
-
+      <div className="flex items-center gap-x-3">
         {/* Counter */}
         <div className="flex items-center rounded-lg border">
           <button
@@ -341,15 +323,11 @@ function CheckoutButton({
 >) {
   const [lastResult, formAction] = useActionState(action, null);
 
-  const [form] = useForm({ lastResult });
-
   useEffect(() => {
-    if (form.errors) {
-      form.errors.forEach((error) => {
-        toast.error(error);
-      });
+    if (lastResult?.error) {
+      console.log(lastResult.error);
     }
-  }, [form.errors]);
+  }, [lastResult?.error]);
 
   return (
     <form action={formAction}>

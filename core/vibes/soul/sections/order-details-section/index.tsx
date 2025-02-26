@@ -64,7 +64,7 @@ interface Destination {
 export interface Order {
   id: string;
   status: string;
-  statusColor?: 'success' | 'warning' | 'error' | 'info';
+  statusColor?: 'success' | 'warning' | 'danger' | 'info';
   date: string;
   destinations: Destination[];
   summary: Summary;
@@ -99,7 +99,7 @@ export function OrderDetailsSection({
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1 className="text-4xl">{title}</h1>
-            <Badge variant={order.statusColor}>{order.status}</Badge>
+            <Badge color={order.statusColor}>{order.status}</Badge>
           </div>
           <p>{order.date}</p>
         </div>
@@ -207,7 +207,7 @@ function ShipmentLineItem({ lineItem }: { lineItem: ShipmentLineItem }) {
         {lineItem.image?.src != null ? (
           <Image
             alt={lineItem.image.alt}
-            className="w-full scale-100 select-none bg-contrast-100 object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+            className="w-full scale-100 select-none bg-contrast-100  transition-transform duration-500 ease-out group-hover:scale-110"
             fill
             sizes="10rem"
             src={lineItem.image.src}

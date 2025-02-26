@@ -26,7 +26,7 @@ export function Subscribe({
           <div className="relative min-h-96 w-full bg-primary/10 @4xl:flex-1">
             <Image
               alt={image.alt}
-              className="object-cover"
+              className=""
               fill
               sizes="(min-width: 56rem) 50vw, 100vw"
               src={image.src}
