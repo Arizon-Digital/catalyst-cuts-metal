@@ -379,6 +379,10 @@ export const getMultipleChoiceOptions = async (
     combinedDropdownList = [...firstDropdownList, ...secondDropdownList];
   }
 
+  // Sorting function: Extracts the first numeric value and sorts in descending order
+  const extractWidth = (label) => parseInt(label.match(/\d+/)[0], 10);
+  combinedDropdownList.sort((a, b) => extractWidth(b.node.label) - extractWidth(a.node.label));
+
   return {
     multipleChoiceOptions: combinedMultipleChoiceOptions,
     DropdownList: combinedDropdownList, // Sorted in descending order
