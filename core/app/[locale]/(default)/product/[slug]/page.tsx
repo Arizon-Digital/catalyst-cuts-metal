@@ -15,7 +15,7 @@ import { addToCart } from './_actions/add-to-cart';
 import { ProductSchema } from './_components/product-schema';
 import { ProductViewed } from './_components/product-viewed';
 import { Reviews } from './_components/reviews';
-import { getProductData } from './page-data';
+import { getMultipleChoiceOptions, getProductData } from './page-data';
 
 const cachedProductDataVariables = cache(
   async (productId: string, searchParams: Props['searchParams']) => {
@@ -141,7 +141,10 @@ const getCtaLabel = async (props: Props) => {
   const { slug } = await props.params;
   const variables = await cachedProductDataVariables(slug, props.searchParams);
   const product = await getProductData(variables);
+  const productId=product.entityId
 
+// console.log("done",transformedData);
+// console.log("mm",opt)
   if (product.availabilityV2.status === 'Unavailable') {
     return t('unavailable');
   }
@@ -229,6 +232,15 @@ export default async function Product(props: Props) {
   const t = await getTranslations('Product');
 
   const productId = Number(slug);
+let dropdownOptions:any;
+dropdownOptions= await getMultipleChoiceOptions(productId)
+console.log("product",dropdownOptions)
+const transformedDropdownList = dropdownOptions?.DropdownList?.map(item => ({
+  value: item?.node?.entityId,
+  label: item?.node?.label
+}));
+
+console.log("jjjj",transformedDropdownList);
   const variables = await cachedProductDataVariables(slug, props.searchParams);
 
   return (
@@ -246,6 +258,7 @@ export default async function Product(props: Props) {
         productId={productId}
         quantityLabel={t('ProductDetails.quantity')}
         thumbnailLabel={t('ProductDetails.thumbnail')}
+        transformedDropdownList={transformedDropdownList}
       />
 
       <FeaturedProductsCarousel

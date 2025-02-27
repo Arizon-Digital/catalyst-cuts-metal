@@ -3,9 +3,9 @@ import { Component } from '~/lib/makeswift/component';
 import { type Props as ClientProps, PropsContextProvider } from './client';
 import { COMPONENT_TYPE } from './register';
 
-type Props = ClientProps & { productId: number };
+type Props = ClientProps & { productId: number,transformedDropdownList?:any };
 
-export const ProductDetail = ({ productId, ...props }: Props) => (
+export const ProductDetail = ({ productId,transformedDropdownList, ...props }: Props) => (
   <PropsContextProvider value={props}>
     <Component
       label={(async () =>

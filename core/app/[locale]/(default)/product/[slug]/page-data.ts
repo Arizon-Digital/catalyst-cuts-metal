@@ -273,3 +273,123 @@ export const getProductData = cache(async (variables: Variables) => {
 
   return product;
 });
+
+
+const GetMultipleChoiceOptionsQuery = graphql(`
+  query GetMultipleChoiceOptions($entityId: Int!, $valuesCursor: String) {
+    site {
+      product(entityId: $entityId) {
+        entityId
+        productOptions(first: 50) {
+          edges {
+            node {
+              entityId
+              displayName
+              isRequired
+              ... on MultipleChoiceOption {
+                displayStyle
+                values(first: 50, after: $valuesCursor) {
+                  edges {
+                    node {
+                      entityId
+                      label
+                      isDefault
+                      isSelected
+                      ... on SwatchOptionValue {
+                        __typename
+                        hexColors
+                        imageUrl(lossy: true, width: 40)
+                      }
+                      ... on ProductPickListOptionValue {
+                        __typename
+                        defaultImage {
+                          altText
+                          url: urlTemplate(lossy: true)
+                        }
+                      }
+                    }
+                  }
+                  pageInfo {
+                    startCursor
+                    endCursor
+                    hasNextPage
+                    hasPreviousPage
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+ 
+export const getMultipleChoiceOptions = async (
+  productId: number | undefined,
+  valuesCursor?: string | null,
+) => {
+  const customerAccessToken = await getSessionCustomerAccessToken();
+
+  // First fetch
+  const { data: firstData } = await client.fetch({
+    document: GetMultipleChoiceOptionsQuery,
+    variables: { entityId: productId, valuesCursor },
+    customerAccessToken,
+    fetchOptions: customerAccessToken ? { cache: 'no-store' } : { next: { revalidate } },
+  });
+
+  const pId = firstData?.site?.product?.entityId;
+  const firstMultipleChoiceOptions =
+    firstData?.site?.product?.productOptions?.edges
+      ?.map((edge) => edge.node)
+      ?.filter((node) => node?.displayStyle === "DropdownList") || [];
+
+  let firstDropdownList =
+    firstMultipleChoiceOptions?.map((option) => option.values?.edges).flat() || [];
+  const firstPageInfo = firstMultipleChoiceOptions?.map((option) => option.values?.pageInfo).flat() || [];
+  const firstPageInfo1 = firstPageInfo?.[0];
+
+  const endCursor = firstPageInfo1?.endCursor || null;
+  const hasNextPage = firstPageInfo1?.hasNextPage ?? null;
+
+  // Store first fetch data
+  let combinedDropdownList = [...firstDropdownList];
+  let combinedMultipleChoiceOptions = [...firstMultipleChoiceOptions];
+
+  // If there's a next page, fetch the second batch
+  if (hasNextPage && endCursor) {
+    const { data: secondData } = await client.fetch({
+      document: GetMultipleChoiceOptionsQuery,
+      variables: { entityId: productId, valuesCursor: endCursor },
+      customerAccessToken,
+      fetchOptions: customerAccessToken ? { cache: 'no-store' } : { next: { revalidate } },
+    });
+
+    const secondMultipleChoiceOptions =
+      secondData?.site?.product?.productOptions?.edges
+        ?.map((edge) => edge.node)
+        ?.filter((node) => node?.displayStyle === "DropdownList") || [];
+
+    let secondDropdownList =
+      secondMultipleChoiceOptions?.map((option) => option.values?.edges).flat() || [];
+    
+    // Merge both results
+    combinedMultipleChoiceOptions = [...firstMultipleChoiceOptions, ...secondMultipleChoiceOptions];
+    combinedDropdownList = [...firstDropdownList, ...secondDropdownList];
+  }
+
+  // Sorting function: Extracts the first numeric value and sorts in descending order
+  const extractWidth = (label) => parseInt(label.match(/\d+/)[0], 10);
+  combinedDropdownList.sort((a, b) => extractWidth(b.node.label) - extractWidth(a.node.label));
+
+  return {
+    multipleChoiceOptions: combinedMultipleChoiceOptions,
+    DropdownList: combinedDropdownList, // Sorted in descending order
+    pId,
+    pageInfo: firstPageInfo, // Keep original pageInfo from first fetch
+    endCursor,
+    hasNextPage,
+  };
+};
+
