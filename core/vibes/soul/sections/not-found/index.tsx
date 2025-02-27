@@ -48,10 +48,7 @@ export function NotFound({
         <FeaturedProductsList
           title={featuredProductsTitle}
           description={featuredProductsDescription}
-          cta={featuredProductsCta}
           products={products}
-          emptyStateTitle={emptyStateTitle}
-          emptyStateSubtitle={emptyStateSubtitle}
           placeholderCount={placeholderCount}
         />
       </section>
