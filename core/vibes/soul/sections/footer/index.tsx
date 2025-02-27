@@ -80,7 +80,7 @@ export const Footer = forwardRef(function Footer(
             <div>
               <h3 className="mb-4 font-semibold text-gray-700">Payments & Security</h3>
               <div className="mb-4 flex flex-wrap gap-2">
-                <img src="https://cdn2.bigcommerce.com/n-ww20x/ghm4gd08/templates/__custom/img/cards.png?t=1501592050" alt="Visa" className="h-8" />
+                <img src="https://cdn2.bigcommerce.com/n-ww20x/ghm4gd08/templates/__custom/img/cards.png?t=1501592050" alt="Visa" className="h-[32px]" />
 
               </div>
               <div className="flex gap-4">
