@@ -141,10 +141,7 @@ const getCtaLabel = async (props: Props) => {
   const { slug } = await props.params;
   const variables = await cachedProductDataVariables(slug, props.searchParams);
   const product = await getProductData(variables);
-  const productId=product.entityId
 
-// console.log("done",transformedData);
-// console.log("mm",opt)
   if (product.availabilityV2.status === 'Unavailable') {
     return t('unavailable');
   }
@@ -232,16 +229,22 @@ export default async function Product(props: Props) {
   const t = await getTranslations('Product');
 
   const productId = Number(slug);
-let dropdownOptions:any;
-dropdownOptions= await getMultipleChoiceOptions(productId)
-console.log("product",dropdownOptions)
-const transformedDropdownList = dropdownOptions?.DropdownList?.map(item => ({
-  value: item?.node?.entityId,
-  label: item?.node?.label
-}));
 
-console.log("jjjj",transformedDropdownList);
   const variables = await cachedProductDataVariables(slug, props.searchParams);
+  let fieldsData: any = await getFields(props);
+  let findFieldMatch: any = fieldsData?.find((item: any) => item?.options?.length >= 50);
+  let findFieldMatchIndex: any = fieldsData?.findIndex((item: any) => item?.options?.length >= 50);
+  if(findFieldMatch) {
+    let dropdownOptions:any;
+    dropdownOptions= await getMultipleChoiceOptions(productId);
+    if(dropdownOptions?.multipleChoiceOptions?.find((dataOptions: any) => dataOptions?.entityId == findFieldMatch?.name)) {
+      const transformedDropdownList = dropdownOptions?.DropdownList?.map((item: any) => ({
+        value: item?.node?.entityId?.toString(),
+        label: item?.node?.label
+      }));
+      fieldsData[findFieldMatchIndex]['options'] = transformedDropdownList;
+    }
+  }
 
   return (
     <>
@@ -251,14 +254,13 @@ console.log("jjjj",transformedDropdownList);
         ctaDisabled={getCtaDisabled(props)}
         ctaLabel={getCtaLabel(props)}
         decrementLabel={t('ProductDetails.decreaseQuantity')}
-        fields={getFields(props)}
+        fields={fieldsData}
         incrementLabel={t('ProductDetails.increaseQuantity')}
         prefetch={true}
         product={getProduct(props)}
         productId={productId}
         quantityLabel={t('ProductDetails.quantity')}
         thumbnailLabel={t('ProductDetails.thumbnail')}
-        transformedDropdownList={transformedDropdownList}
       />
 
       <FeaturedProductsCarousel

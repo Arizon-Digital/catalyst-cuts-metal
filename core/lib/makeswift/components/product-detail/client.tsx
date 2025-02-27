@@ -29,9 +29,6 @@ export type Props = Omit<VibesProductDetailProps, 'product'> & {
 const PropsContext = createContext<Props | null>(null);
 
 export const PropsContextProvider = ({ value, children }: PropsWithChildren<{ value: Props }>) => {
-  console.log("PropsContextProvider - value:", value);
-  console.log("PropsContextProvider - children:", children);
-
   return <PropsContext.Provider value={value}>{children}</PropsContext.Provider>;
 };
 
