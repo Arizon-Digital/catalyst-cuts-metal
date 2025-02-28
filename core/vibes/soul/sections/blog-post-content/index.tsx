@@ -47,7 +47,7 @@ export function BlogPostContent({
 
             return (
               <>
-                <header className="mx-auto w-full max-w-4xl pb-8 @2xl:pb-12 @4xl:pb-16">
+                <header className="mx-auto w-full max-w-[80rem] pb-8 @2xl:pb-12 @4xl:pb-16">
                   {breadcrumbs && <Breadcrumbs breadcrumbs={breadcrumbs} />}
 
                   <h1 className="mb-4 mt-8 font-heading text-4xl font-medium leading-none @xl:text-5xl @4xl:text-6xl">
@@ -89,7 +89,7 @@ export function BlogPostContent({
                 )}
 
                 <article
-                  className="prose mx-auto w-full max-w-4xl space-y-4 [&_h2]:font-heading [&_h2]:text-3xl [&_h2]:font-normal [&_h2]:leading-none [&_h2]:@xl:text-4xl [&_img]:mx-auto [&_img]:max-h-[600px] [&_img]:w-fit [&_img]:rounded-2xl [&_img]:object-cover"
+                  className="prose mx-auto w-full max-w-[80rem] space-y-4 [&_h2]:font-heading [&_h2]:text-3xl [&_h2]:font-normal [&_h2]:leading-none [&_h2]:@xl:text-4xl [&_img]:mx-auto [&_img]:max-h-[600px] [&_img]:w-fit [&_img]:rounded-2xl [&_img]:object-cover"
                   dangerouslySetInnerHTML={{ __html: content }}
                 />
               </>
@@ -137,7 +137,7 @@ function BlogPostImageSkeleton() {
 
 function BlogPostBodySkeleton() {
   return (
-    <div className="mx-auto w-full max-w-4xl animate-pulse pb-8 @2xl:pb-12 @4xl:pb-16">
+    <div className="mx-auto w-full max-w-[80rem] animate-pulse pb-8 @2xl:pb-12 @4xl:pb-16">
       <div className="mb-8 h-[1lh] w-3/5 rounded-lg bg-contrast-100" />
       <div className="mb-4 h-[0.5lh] w-full rounded-lg bg-contrast-100" />
       <div className="mb-4 h-[0.5lh] w-full rounded-lg bg-contrast-100" />
@@ -152,7 +152,7 @@ function BlogPostBodySkeleton() {
 export function BlogPostContentSkeleton() {
   return (
     <div>
-      <div className="mx-auto w-full max-w-4xl pb-8 @2xl:pb-12 @4xl:pb-16">
+      <div className="mx-auto w-full max-w-[80rem] pb-8 @2xl:pb-12 @4xl:pb-16">
         <BreadcrumbsSkeleton />
         <BlogPostTitleSkeleton />
         <BlogPostAuthorSkeleton />

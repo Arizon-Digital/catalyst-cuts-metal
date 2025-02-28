@@ -20,7 +20,7 @@ interface Props {
 
 export function WebPageContent({ webPage: streamableWebPage, breadcrumbs, children }: Props) {
   return (
-    <section className="w-full max-w-4xl">
+    <section className="w-full max-w-[80rem]">
       <Stream fallback={<WebPageContentSkeleton />} value={streamableWebPage}>
         {(webPage) => {
           const { title, content } = webPage;
@@ -58,7 +58,7 @@ function WebPageTitleSkeleton() {
 
 function WebPageBodySkeleton() {
   return (
-    <div className="mx-auto w-full max-w-4xl animate-pulse pb-8 @2xl:pb-12 @4xl:pb-16">
+    <div className="mx-auto w-full max-w-[80rem] animate-pulse pb-8 @2xl:pb-12 @4xl:pb-16">
       <div className="mb-8 h-[1lh] w-3/5 rounded-lg bg-contrast-100" />
       <div className="mb-4 h-[0.5lh] w-full rounded-lg bg-contrast-100" />
       <div className="mb-4 h-[0.5lh] w-full rounded-lg bg-contrast-100" />
@@ -73,7 +73,7 @@ function WebPageBodySkeleton() {
 function WebPageContentSkeleton() {
   return (
     <div>
-      <div className="mx-auto w-full max-w-4xl pb-8 @2xl:pb-12 @4xl:pb-16">
+      <div className="mx-auto w-full max-w-[80rem] pb-8 @2xl:pb-12 @4xl:pb-16">
         <BreadcrumbsSkeleton />
         <WebPageTitleSkeleton />
       </div>
