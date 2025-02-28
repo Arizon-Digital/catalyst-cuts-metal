@@ -105,6 +105,29 @@ export default async function RootLayout({ params, children }: Props) {
         <head>
           <SiteTheme />
           <DraftModeScript appOrigin={process.env.MAKESWIFT_APP_ORIGIN} />
+          <script async src="https://www.googletagmanager.com/gtag/js?id=G-LNXRR0HVZ2"></script>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-LNXRR0HVZ2');
+            `,
+          }}></script>
+          <script async src="https://www.googletagmanager.com/gtag/js?id=AW-880721874"></script>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+               window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-880721874');
+            `,
+          }}></script>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+               (function(w,d,t,r,u){var f,n,i;w[u]=w[u]||[],f=function(){var o={ti:"5668971", enableAutoSpaTracking: true};o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad")},n=d.createElement(t),n.src=r,n.async=1,n.onload=n.onreadystatechange=function(){var s=this.readyState;s&&s!=="loaded"&&s!=="complete"||(f(),n.onload=n.onreadystatechange=null)},i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)})(window,document,"script","//bat.bing.com/bat.js","uetq");
+            `,
+          }}></script>
         </head>
         <body>
           <Notifications />
