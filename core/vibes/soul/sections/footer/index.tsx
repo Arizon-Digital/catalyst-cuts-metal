@@ -21,7 +21,7 @@ export const Footer = forwardRef(function Footer(
     { href: '/videos', label: 'Videos' },
     { href: '/blog', label: 'Blog' },
     { href: '/shipping-returns', label: 'Shipping & Returns' },
-    { href: '/contact', label: 'Contact Us' }
+    { href: '/contact-us', label: 'Contact Us' }
   ];
 
   return (

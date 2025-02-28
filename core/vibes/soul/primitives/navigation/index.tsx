@@ -39,7 +39,7 @@ const STATIC_MENU_ITEMS = [
   { label: 'Videos', href: '/videos' },
   { label: 'Blog', href: '/blog' },
   { label: 'Shipping & returns', href: '/shipping-returns' },
-  { label: 'Contact Us', href: '/contact' },
+  { label: 'Contact Us', href: '/contact-us' },
 ];
 
 // Main Navigation Component

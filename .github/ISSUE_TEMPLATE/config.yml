@@ -10,7 +10,7 @@ contact_links:
     url: https://github.com/bigcommerce/catalyst/discussions/categories/feature-requests
     about: Join us in Discussions to share your idea on improving Catalyst. Thanks for your contribution!
   - name: Official BigCommerce Support
-    url: https://support.bigcommerce.com/contact
+    url: https://support.bigcommerce.com/contact-us
     about: To report a platform bug, outage or greater platform issue, contact our Technical Support team. If you're a partner, please do so via your Partner Portal.
   - name: 💙 Join the BigCommerceDevs Community
     url: https://developer.bigcommerce.com/community
