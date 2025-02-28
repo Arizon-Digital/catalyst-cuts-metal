@@ -54,7 +54,7 @@ export function StickySidebarLayout({
               '1/3': '@4xl:w-1/3',
               '1/2': '@4xl:w-1/2',
               '1/4': '@4xl:w-1/4',
-              small: '@4xl:w-48',
+              small: '@4xl:w-[2rem]',
               medium: '@4xl:w-60',
               large: '@4xl:w-80',
             }[sidebarSize],
