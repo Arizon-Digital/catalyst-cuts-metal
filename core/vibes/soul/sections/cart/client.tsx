@@ -1,4 +1,3 @@
-
 'use client';
 
 import { getFormProps, getInputProps, SubmissionResult, useForm } from '@conform-to/react';
@@ -18,6 +17,45 @@ import { cartLineItemActionFormDataSchema } from './schema';
 
 import { CartEmptyState } from '.';
 
+
+function simplifyCartSummary(summaryItems) {
+  
+  const grouped = {};
+  
+  
+  summaryItems.forEach(item => {
+    const { label, value } = item;
+    
+    if (!grouped[label]) {
+     
+      grouped[label] = {
+        label,
+        value: value,
+        numValue: parseFloat(value.replace(/[^0-9.-]+/g, ''))
+      };
+    } else {
+      
+      grouped[label].numValue += parseFloat(value.replace(/[^0-9.-]+/g, ''));
+    }
+  });
+  
+  
+  return Object.values(grouped).map(item => {
+   
+    let formattedValue;
+    if (item.label.toLowerCase().includes('discount')) {
+      formattedValue = `-$${Math.abs(item.numValue).toFixed(2)}`;
+    } else {
+      formattedValue = `$${Math.abs(item.numValue).toFixed(2)}`;
+    }
+    
+    return {
+      label: item.label,
+      value: formattedValue
+    };
+  });
+}
+
 type Action<State, Payload> = (state: Awaited<State>, payload: Payload) => State | Promise<State>;
 
 export interface CartLineItem {
@@ -27,7 +65,7 @@ export interface CartLineItem {
   subtitle: string;
   quantity: number;
   price: string;
-  href: string; // Added href property for product link
+  href: string; 
 }
 
 export interface CartSummaryItem {
@@ -144,7 +182,8 @@ export function CartClient<LineItem extends CartLineItem>({
           </h2>
           <dl aria-label="Receipt Summary" className="w-full">
             <div className="divide-y divide-contrast-100">
-              {cart.summaryItems.map((summaryItem, index) => (
+              {/* Use the simplifyCartSummary helper function to consolidate items with the same label */}
+              {simplifyCartSummary(cart.summaryItems).map((summaryItem, index) => (
                 <div className="flex justify-between py-4" key={index}>
                   <dt>{summaryItem.label}</dt>
                   <dd>{summaryItem.value}</dd>
@@ -153,7 +192,7 @@ export function CartClient<LineItem extends CartLineItem>({
             </div>
 
             <div className="flex justify-between border-t border-contrast-100 py-6 text-xl font-bold">
-              <dt>{ 'Total Amount'}</dt>
+              <dt>{'Total Amount'}</dt>
               <dl>{cart.total}</dl>
             </div>
           </dl>
