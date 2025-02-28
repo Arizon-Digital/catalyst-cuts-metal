@@ -1,3 +1,4 @@
+"use client";
 import { clsx } from 'clsx';
 
 import { Badge } from '@/vibes/soul/primitives/badge';
@@ -6,6 +7,7 @@ import { Image } from '~/components/image';
 import { Link } from '~/components/link';
 
 import { Compare } from './compare';
+import { useState } from 'react';
 
 export interface CardProduct {
   id: string;
@@ -59,6 +61,8 @@ export function ProductCard({
   imagePriority = false,
   imageSizes = '(min-width: 80rem) 20vw, (min-width: 64rem) 25vw, (min-width: 42rem) 33vw, (min-width: 24rem) 50vw, 100vw',
 }: Props) {
+  const [storeId,setStoreId]=useState([])
+
   return (
     <div className={clsx('@container', className)}>
       <Link
@@ -85,7 +89,7 @@ export function ProductCard({
             <Image
               alt={image.alt}
               className={clsx(
-                'w-full scale-100 select-none object-cover transition-transform duration-500 ease-out group-hover:scale-110',
+                'w-full scale-100 select-none transition-transform duration-500 ease-out group-hover:scale-110',
                 {
                   light: 'bg-[var(--product-card-light-background,hsl(var(--contrast-100))]',
                   dark: 'bg-[var(--product-card-dark-background,hsl(var(--contrast-500))]',
@@ -150,15 +154,21 @@ export function ProductCard({
         </div>
 
         {showCompare && (
-          <div className="mt-0.5 shrink-0">
-            <Compare
-              colorScheme={colorScheme}
-              label={compareLabel}
-              paramName={compareParamName}
-              productId={id}
-            />
-          </div>
-        )}
+  <div className="mt-0.5 shrink-0">
+    <Compare
+      colorScheme={colorScheme}
+      label={compareLabel}
+      paramName={compareParamName}
+      productId={id}
+      productName={title}  
+      image={image ? { 
+        altText: image.alt, 
+        src: image.src 
+      } : undefined}
+    />
+  </div>
+)}
+       
       </div>
     </div>
   );

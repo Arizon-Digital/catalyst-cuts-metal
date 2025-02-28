@@ -36,7 +36,7 @@ export function BlogPostCard({ blogPost, className }: Props) {
         {image?.src != null && image.src !== '' ? (
           <Image
             alt={image.alt}
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+            className="transition-transform duration-500 ease-out group-hover:scale-110"
             fill
             sizes="(min-width: 80rem) 25vw, (min-width: 56rem) 33vw, (min-width: 28rem) 50vw, 100vw"
             src={image.src}

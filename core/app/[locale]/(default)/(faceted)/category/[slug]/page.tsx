@@ -18,7 +18,6 @@ import { pageInfoTransformer } from '~/data-transformers/page-info-transformer';
 import { pricesTransformer } from '~/data-transformers/prices-transformer';
 
 import { fetchFacetedSearch } from '../../fetch-faceted-search';
-
 import { CategoryViewed } from './_components/category-viewed';
 import { getCategoryPageData } from './page-data';
 
@@ -53,13 +52,6 @@ const createCategorySearchParamsCache = cache(async (props: Props) => {
   const categoryFilters = transformedCategoryFacets.filter((facet) => facet != null);
   const filterParsers = getFilterParsers(categoryFilters);
 
-  // If there are no filters, return `null`, since calling `createSearchParamsCache` with an empty
-  // object will throw the following cryptic error:
-  //
-  // ```
-  // Error: [nuqs] Empty search params cache. Search params can't be accessed in Layouts.
-  //   See https://err.47ng.com/NUQS-500
-  // ```
   if (Object.keys(filterParsers).length === 0) {
     return null;
   }
@@ -80,6 +72,11 @@ const getRefinedSearch = cache(async (props: Props) => {
     category: categoryId,
   });
 });
+
+async function getDescription(props: Props): Promise<string | null> {
+  const category = await getCategory(props);
+  return category.description ?? null;
+}
 
 async function getBreadcrumbs(props: Props): Promise<Breadcrumb[]> {
   const category = await getCategory(props);
@@ -114,25 +111,21 @@ async function getSubCategoriesFilters(props: Props): Promise<Filter[]> {
 
 async function getTitle(props: Props): Promise<string | null> {
   const category = await getCategory(props);
-
   return category.name;
 }
 
 const getSearch = cache(async (props: Props) => {
   const search = await getRefinedSearch(props);
-
   return search;
 });
 
 async function getTotalCount(props: Props): Promise<number> {
   const search = await getSearch(props);
-
   return search.products.collectionInfo?.totalItems ?? 0;
 }
 
 async function getProducts(props: Props) {
   const search = await getSearch(props);
-
   return search.products.items;
 }
 
@@ -182,7 +175,6 @@ async function getFilters(props: Props): Promise<Filter[]> {
 
 async function getSortLabel(): Promise<string> {
   const t = await getTranslations('FacetedGroup.SortBy');
-
   return t('ariaLabel');
 }
 
@@ -204,49 +196,41 @@ async function getSortOptions(): Promise<SortOption[]> {
 
 async function getPaginationInfo(props: Props): Promise<CursorPaginationInfo> {
   const search = await getRefinedSearch(props);
-
   return pageInfoTransformer(search.products.pageInfo);
 }
 
 async function getFilterLabel(): Promise<string> {
   const t = await getTranslations('FacetedGroup.FacetedSearch');
-
   return t('filters');
 }
 
 async function getCompareLabel(): Promise<string> {
   const t = await getTranslations('Components.ProductCard.Compare');
-
   return t('compare');
 }
 
 async function getFiltersPanelTitle(): Promise<string> {
   const t = await getTranslations('FacetedGroup.FacetedSearch');
-
   return t('filters');
 }
 
 async function getRangeFilterApplyLabel(): Promise<string> {
   const t = await getTranslations('FacetedGroup.FacetedSearch.Range');
-
   return t('apply');
 }
 
 async function getResetFiltersLabel(): Promise<string> {
   const t = await getTranslations('FacetedGroup.FacetedSearch');
-
   return t('resetFilters');
 }
 
 async function getEmptyStateTitle(): Promise<string | null> {
   const t = await getTranslations('Category.Empty');
-
   return t('title');
 }
 
 async function getEmptyStateSubtitle(): Promise<string | null> {
   const t = await getTranslations('Category.Empty');
-
   return t('subtitle');
 }
 
@@ -282,6 +266,7 @@ export default async function Category(props: Props) {
       <ProductsListSection
         breadcrumbs={getBreadcrumbs(props)}
         compareLabel={getCompareLabel()}
+        description={getDescription(props)}
         emptyStateSubtitle={getEmptyStateSubtitle()}
         emptyStateTitle={getEmptyStateTitle()}
         filterLabel={await getFilterLabel()}

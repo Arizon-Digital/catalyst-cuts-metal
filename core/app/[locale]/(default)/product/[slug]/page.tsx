@@ -15,7 +15,7 @@ import { addToCart } from './_actions/add-to-cart';
 import { ProductSchema } from './_components/product-schema';
 import { ProductViewed } from './_components/product-viewed';
 import { Reviews } from './_components/reviews';
-import { getProductData } from './page-data';
+import { getMultipleChoiceOptions, getProductData } from './page-data';
 
 const cachedProductDataVariables = cache(
   async (productId: string, searchParams: Props['searchParams']) => {
@@ -229,7 +229,22 @@ export default async function Product(props: Props) {
   const t = await getTranslations('Product');
 
   const productId = Number(slug);
+
   const variables = await cachedProductDataVariables(slug, props.searchParams);
+  let fieldsData: any = await getFields(props);
+  let findFieldMatch: any = fieldsData?.find((item: any) => item?.options?.length >= 50);
+  let findFieldMatchIndex: any = fieldsData?.findIndex((item: any) => item?.options?.length >= 50);
+  if(findFieldMatch) {
+    let dropdownOptions:any;
+    dropdownOptions= await getMultipleChoiceOptions(productId);
+    if(dropdownOptions?.multipleChoiceOptions?.find((dataOptions: any) => dataOptions?.entityId == findFieldMatch?.name)) {
+      const transformedDropdownList = dropdownOptions?.DropdownList?.map((item: any) => ({
+        value: item?.node?.entityId?.toString(),
+        label: item?.node?.label
+      }));
+      fieldsData[findFieldMatchIndex]['options'] = transformedDropdownList;
+    }
+  }
 
   return (
     <>
@@ -239,7 +254,7 @@ export default async function Product(props: Props) {
         ctaDisabled={getCtaDisabled(props)}
         ctaLabel={getCtaLabel(props)}
         decrementLabel={t('ProductDetails.decreaseQuantity')}
-        fields={getFields(props)}
+        fields={fieldsData}
         incrementLabel={t('ProductDetails.increaseQuantity')}
         prefetch={true}
         product={getProduct(props)}

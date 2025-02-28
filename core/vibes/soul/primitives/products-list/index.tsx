@@ -14,6 +14,7 @@ export type ListProduct = CardProduct;
 interface Props {
   products: Streamable<ListProduct[]>;
   compareProducts?: Streamable<ListProduct[] | null>;
+  description?: Streamable<string | null>;
   className?: string;
   colorScheme?: 'light' | 'dark';
   aspectRatio?: '5:6' | '3:4' | '1:1';
@@ -31,6 +32,7 @@ export function ProductsList({
   className,
   colorScheme,
   aspectRatio,
+  description, 
   showCompare,
   compareAction,
   compareProducts: streamableCompareProducts,
@@ -131,9 +133,9 @@ export function ProductsListEmptyState({
           'mx-auto grid grid-cols-1 gap-x-4 gap-y-6 [mask-image:linear-gradient(to_bottom,_black_0%,_transparent_90%)] @sm:grid-cols-2 @2xl:grid-cols-3 @2xl:gap-x-5 @2xl:gap-y-8 @5xl:grid-cols-4 @7xl:grid-cols-5',
         )}
       >
-        {Array.from({ length: placeholderCount }).map((_, index) => (
+        {/* {Array.from({ length: placeholderCount }).map((_, index) => (
           <ProductCardSkeleton key={index} />
-        ))}
+        ))} */}
       </div>
       <div className="absolute inset-0 mx-auto px-3 py-16 pb-3 @4xl:px-10 @4xl:pb-10 @4xl:pt-28">
         <div className="mx-auto max-w-xl space-y-2 text-center @4xl:space-y-3">

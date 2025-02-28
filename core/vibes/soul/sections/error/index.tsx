@@ -15,7 +15,7 @@ export function Error({
 }: Props) {
   return (
     <section className="@container">
-      <div className="mx-auto max-w-3xl px-4 py-10 @xl:px-6 @xl:py-14 @4xl:px-8 @4xl:py-20">
+      <div className="mx-auto max-w-3xl px-4 py-10 @xl:px-6 @xl: @4xl:px-8 @4xl:py-20">
         <h1 className="mb-3 font-heading text-3xl font-medium leading-none @xl:text-4xl @4xl:text-5xl">
           {title}
         </h1>

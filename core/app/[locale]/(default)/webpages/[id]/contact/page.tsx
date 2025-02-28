@@ -197,7 +197,7 @@ export default async function ContactPage({ params, searchParams }: Props) {
 
   return (
     <WebPageContent breadcrumbs={getWebPageBreadcrumbs(id)} webPage={getWebPage(id)}>
-      <div className="mt-8 @2xl:mt-12 @4xl:mt-16">
+      <div className="mt-8 @2xl:mt-12 pb-10 @4xl:mt-16">
         <DynamicForm
           action={submitContactForm}
           fields={await getContactFields(id)}

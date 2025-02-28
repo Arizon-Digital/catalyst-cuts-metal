@@ -41,7 +41,6 @@ export function Select({
   ...rest
 }: Props) {
   const id = React.useId();
-
   return (
     <div className={clsx('w-full space-y-2', className)}>
       {label !== undefined && label !== '' && (
