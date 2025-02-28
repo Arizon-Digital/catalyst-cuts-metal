@@ -14,7 +14,7 @@ interface Props {
   searchParams: Promise<SearchParams>;
 }
 
-const defaultPostLimit = 9;
+const defaultPostLimit = 12;
 
 const searchParamsCache = createSearchParamsCache({
   tag: parseAsString,
