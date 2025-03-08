@@ -2,7 +2,7 @@ import { Stream, Streamable } from '@/vibes/soul/lib/streamable';
 import { Accordion, Accordions } from '@/vibes/soul/primitives/accordions';
 import { Breadcrumb, Breadcrumbs } from '@/vibes/soul/primitives/breadcrumbs';
 import { Price, PriceLabel } from '@/vibes/soul/primitives/price-label';
-import { Rating } from '@/vibes/soul/primitives/rating';
+// import { Rating } from '@/vibes/soul/primitives/rating';
 import { ProductGallery } from '@/vibes/soul/sections/product-detail/product-gallery';
 
 import { ProductDetailForm, ProductDetailFormAction } from './product-detail-form';
@@ -81,9 +81,9 @@ export function ProductDetail<F extends Field>({
                     {product.title}
                   </h1>
 
-                  <Stream fallback={<RatingSkeleton />} value={product.rating}>
+                  {/* <Stream fallback={<RatingSkeleton />} value={product.rating}>
                     {(rating) => <Rating rating={rating ?? 0} />}
-                  </Stream>
+                  </Stream> */}
 
                   <Stream fallback={<PriceLabelSkeleton />} value={product.price}>
                     {(price) => (
@@ -200,14 +200,14 @@ function PriceLabelSkeleton() {
   return <div className="my-4 h-4 w-20 animate-pulse rounded-md bg-contrast-100" />;
 }
 
-function RatingSkeleton() {
-  return (
-    <div className="flex w-[136px] animate-pulse items-center gap-1">
-      <div className="h-4 w-[100px] rounded-md bg-contrast-100" />
-      <div className="h-6 w-8 rounded-xl bg-contrast-100" />
-    </div>
-  );
-}
+// function RatingSkeleton() {
+//   return (
+//     <div className="flex w-[136px] animate-pulse items-center gap-1">
+//       <div className="h-4 w-[100px] rounded-md bg-contrast-100" />
+//       <div className="h-6 w-8 rounded-xl bg-contrast-100" />
+//     </div>
+//   );
+// }
 
 function ProductSummarySkeleton() {
   return (
@@ -298,7 +298,7 @@ export function ProductDetailSkeleton() {
 
         <div className="mb-6 h-6 w-72 rounded-lg bg-contrast-100" />
 
-        <RatingSkeleton />
+        {/* <RatingSkeleton /> */}
 
         <PriceLabelSkeleton />
 

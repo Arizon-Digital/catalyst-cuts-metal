@@ -1,3 +1,5 @@
+
+
 import { removeEdgesAndNodes } from '@bigcommerce/catalyst-client';
 import { Metadata } from 'next';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
@@ -14,8 +16,10 @@ import { ProductDetail } from '~/lib/makeswift/components/product-detail';
 import { addToCart } from './_actions/add-to-cart';
 import { ProductSchema } from './_components/product-schema';
 import { ProductViewed } from './_components/product-viewed';
-import { Reviews } from './_components/reviews';
+// import { Reviews } from './_components/reviews';
+
 import { getMultipleChoiceOptions, getProductData } from './page-data';
+import { ClientTrustSpotWrapper } from './client'; 
 
 const cachedProductDataVariables = cache(
   async (productId: string, searchParams: Props['searchParams']) => {
@@ -273,8 +277,13 @@ export default async function Product(props: Props) {
         scrollbarLabel={t('RelatedProducts.scrollbar')}
         title={t('RelatedProducts.title')}
       />
-
-      <Reviews productId={productId} />
+      
+      <div className=" py-8">
+  <ClientTrustSpotWrapper 
+    productId={productId.toString()} 
+    productData={getProduct(props)}
+  />
+      </div>
 
       <Stream fallback={null} value={getProductData(variables)}>
         {(product) => (
